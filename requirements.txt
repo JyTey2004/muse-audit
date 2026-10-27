@@ -1,0 +1,5 @@
+# Direct dependencies pinned to the installed, protocol-tested versions.
+# v1 is the MCP maintenance line; v2 migration has NOT been tested.
+mcp==1.29.0
+openpyxl==3.1.5
+python-docx==1.2.0

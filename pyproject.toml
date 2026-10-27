@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "muse-audit-prototype"
+version = "0.1.0"
+description = "Offline, bounded native-artifact checks exposed through MCP stdio"
+requires-python = ">=3.11,<3.15"
+dependencies = ["mcp==1.29.0", "openpyxl==3.1.5", "python-docx==1.2.0"]
+
+[project.scripts]
+muse-audit = "muse_audit.cli:main"
+muse-audit-mcp = "muse_audit.server:main"
+
+[tool.setuptools.packages.find]
+include = ["muse_audit*"]

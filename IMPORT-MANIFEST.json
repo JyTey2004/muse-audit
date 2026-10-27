@@ -1,0 +1,46 @@
+{
+  "archive_sha256": "1598a78fc51185c2955da161937b7df92e8f38919ab29a251639861f82cd0bcf",
+  "checkpoint": "Muse audit checkpoint 1",
+  "documentation_changes": [
+    "Standalone paths and local setup guidance",
+    "Cloud review context without private workspace identifiers",
+    "Added separate local Mac verification summary"
+  ],
+  "excluded": [
+    "Private research and planning",
+    "Older prototypes and deliverables",
+    "Historical generated evidence and logs",
+    "Nonportable fixture-authoring and whole-project packaging scripts",
+    "Environment files, credentials, caches, dependencies and Git history"
+  ],
+  "format": 1,
+  "imported_source": "prototypes/muse_audit",
+  "licensing": "No license selected by user",
+  "publication": "Private GitHub repository: https://github.com/JyTey2004/muse-audit",
+  "runtime_code_sha256": "c39a92e89634ba9a9a16d7820fd4d08dc8ad78da1b485a729d9db7cf423c62ea",
+  "unchanged_imported_files": {
+    "examples/home_office/budget-preview.png": "69635c8c0f05a7d35c7d155a1f5bf82e91833774cd2ae492af47a0c5ce2372f9",
+    "examples/home_office/budget.xlsx": "0a710f2cde06782cfcb91a2ab31d2fab225223e893f214467c5728b472a1cd3e",
+    "examples/home_office/job.json": "39289f8690df5d342a9e11f52f301579f43d00238211493db51eadd11db93b9e",
+    "examples/home_office/prices.json": "c2a1585c0bc63f5cff02e1a2bef8eda2ffcc8d2b116dda60742fae699a2ff259",
+    "examples/study_summary/job.json": "ea55f3d121e221e9338fb1e068191e8cfc64d55a83e6988ce03b83eb7f7c9588",
+    "examples/study_summary/study-log.txt": "7d695882b4323e7b9be7623682fdd55ddd2e283054678f88354e10559fc61abe",
+    "examples/study_summary/study-summary.docx": "a7f41c766015ead3bfe807958bfc7334a3b8d69d6efd55d5d5b2e4e0ea5c0a85",
+    "muse_audit/__init__.py": "2d105bb5d9e821f6109bf5bd9bd867dd34eaf727c6e6c102898e63abb056dd9e",
+    "muse_audit/adapters/__init__.py": "bf571451decc883648f3a81081a57d4a5fb7d6c6559eee7d1ea4d8d89b40f22d",
+    "muse_audit/adapters/docx_report.py": "cacb9fadc82663b9b7f017f0cdfd01db44f381ee7a53a75eae88e74a996c764e",
+    "muse_audit/adapters/xlsx_budget.py": "eaedea4cf20fb85f937250c44cc5b1580bb95a9838d0f8322a386a09eb9cf635",
+    "muse_audit/cli.py": "ad24cf6aa46acc2f3a9280d3f5065777ebbcd025e66feac3202d8bd3af181e50",
+    "muse_audit/core.py": "af8c7e622121c82e8ef904751a8a6bf3e80ed8ad533f53c73358be43832acb2d",
+    "muse_audit/demo.py": "6e572a6353f7c713bceb19f2e34244370d03f00bc008ea422676b95d02f447b3",
+    "muse_audit/fixtures_docx.py": "801eaf45f9d87467d4c3f93dbd9b030401b34e9c4842cd9ee5b13d6f8662a8a9",
+    "muse_audit/io.py": "a6f4ebd05d8990543c24c850863a81937fc3b3f46c85abf2e16360113a77f75f",
+    "muse_audit/model_adapter.py": "90b9a31972e2e04aabfeb119df43594452c10dda861df953e75df5f6eb222f4b",
+    "muse_audit/report.py": "0dc6370fc8443f0dcba35477396d595556c3a9d857106af0a5e6e1ce09a6490c",
+    "muse_audit/server.py": "b3e149946a28de27c04e15eed5cb4d4d12fee8c318d9947915975cc4d57f847a",
+    "tests/test_core.py": "e953f4bad01224724b412005c4ab9e0922689fefb150e1a48182590a11e3dea9",
+    "tests/test_demo.py": "d7fe798a1bc4e97e13e818d2e4ae8187ce6893ce587e9b325dcd1d255101db38",
+    "tests/test_docx_report.py": "da346d2f12b6664115fb79de7bbc381e889afba1eb60fa608baeae2b65d589ff",
+    "tests/test_protocol.py": "5f1a8833dafddc2e0b3267977d0e28645a1e4472b1ea2421da24953d5832513d"
+  }
+}

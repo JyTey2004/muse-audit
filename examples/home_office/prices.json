@@ -1,0 +1,9 @@
+{
+  "currency": "USD",
+  "amounts": {
+    "desk": 45000,
+    "chair": 25000,
+    "delivery": 8000
+  },
+  "provenance": "Hand-authored synthetic prices; not live vendor quotes"
+}
