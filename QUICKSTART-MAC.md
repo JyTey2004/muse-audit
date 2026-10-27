@@ -57,6 +57,8 @@ Exit 2 is an expected usable audit result with failures, unknowns or stale evide
 
 ## Consumer Muse testing
 
+For the tested local developer-host route, use [CLAUDE-CODE.md](CLAUDE-CODE.md) and `./start-claude-code.command`. Its tools are limited to copied synthetic bundles and its configuration is session-scoped. This is separate from consumer Muse validation.
+
 The B2C validation target is consumer Muse. Follow [CONSUMER-VALIDATION.md](CONSUMER-VALIDATION.md) for access checks, the unresolved connector interface, and synthetic cases. Consumer access and tool calls have not passed. The public personal Custom Connector route does not establish a Mac-local stdio connection.
 
 The prepared ignored `.local/muse-settings-entry.json` is a **Muse Code-only** developer example. It does not configure consumer Muse. No Muse Code installation is required for the offline demo or a substitute for consumer validation. Its server workspace is restricted to `examples`, and no host settings have been changed.

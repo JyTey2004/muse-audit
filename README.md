@@ -6,6 +6,8 @@ The user's wider Muse audience is the product direction; this is a narrow testab
 
 Start with [QUICKSTART-MAC.md](QUICKSTART-MAC.md). This standalone checkout imports the reviewed prototype for local user testing. Development remains cloud-first. The [GitHub repository](https://github.com/JyTey2004/muse-audit) is private. No license has been selected or granted by this checkpoint.
 
+The [private step-by-step field guide](https://muse-audit-field-guide.tey-jia-ye.chatgpt.site) documents the complete workflow. For the scoped local developer host, see [CLAUDE-CODE.md](CLAUDE-CODE.md) and `start-claude-code.command`. Consumer Muse remains untested.
+
 ## What is implemented
 
 - Official Python MCP SDK **1.29.0**, pinned maintenance-line version already available in the cloud runtime. Actual subprocess `initialize`, `tools/list`, `tools/call` and error/recovery tests negotiate **2025-11-25**. This is not a hand-written protocol stub. It is **not yet tested inside Muse Code or consumer Muse**.

@@ -31,3 +31,13 @@ The existing local `start-demo.command` was run again successfully on 27 October
 No runtime, test or example bytes changed. The expected budget failure, unsupported claims and source-change STALE result remain visible. Native-app rendering/recalculation remains NOT RUN. No reproducible runtime setup failure was found; the constraints file's stale comment about macOS setup was corrected without changing any pins.
 
 Consumer Muse's access gate did not permit reaching Custom Connector setup. Its accepted API/MCP method, transport, authentication, file-transfer route, actual tool calls, evidence display and correction/recheck flow remain UNKNOWN or NOT RUN; see CONSUMER-VALIDATION.md. Account-specific observations and local command logs are retained only in ignored `.local/`. No consumer connection, deployment or credentials were created.
+
+## Claude Code synthetic host check — 27 October 2026
+
+At the user's request, Claude Code replaced the planned Claude Desktop host. Claude Code 2.1.305 connected to a session-scoped local stdio configuration containing exactly the four read-only Muse Audit tools. Built-in tools were disabled. No global MCP settings were installed.
+
+Two print/stream-JSON runs recorded 12 actual tool calls: capabilities, both initial audits, both exact repair proposals, corrected-file audits, full rechecks, a changed-source recheck, an intentional traversal refusal and a valid recovery audit. Actual CLI final text displayed observed/expected values and exact spreadsheet/source and paragraph/line locations. The reviewed proposals were applied separately through the local CLI to new synthetic bundles; the host tools did not write files.
+
+Repaired budget: 6 PASS / 1 FAIL / 1 UNKNOWN, REVISE, with FRESH unchanged receipt. Repaired DOCX: 3 PASS / 0 FAIL / 1 UNKNOWN, UNRESOLVED, also FRESH. Changed-source copy: STALE prior evidence with newly executed 5 PASS / 2 FAIL / 1 UNKNOWN. Cap, title, weekly plan, source bytes, requirements and original examples were preserved. Raw events, final host text and machine-verified summaries remain in ignored `.local/claude-code/host-evidence/`.
+
+The 54-test suite and standalone real MCP checks passed again after local launcher setup. This is a bounded Claude Code developer-host result, not a Desktop UI or consumer Muse result. Consumer Muse remains NOT RUN / UNTESTED; native Office rendering/recalculation remains NOT RUN. See CLAUDE-CODE.md and the private field guide for the reusable local launcher.
