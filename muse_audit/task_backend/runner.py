@@ -19,8 +19,9 @@ class Runner:
         approved = self.store.approval(contract_id, self.owner)
         original = json.loads(contract['body'])
         validate(original)
-        if 'synthetic.edit' not in original['allowed_actions']:
-            raise ValueError('Synthetic edit not allowed by original contract')
+        required_actions = {'synthetic.add', 'synthetic.edit', 'synthetic.read'}
+        if not required_actions.issubset(original['allowed_actions']):
+            raise ValueError('Controlled runner requires approved add, edit and read actions before execution')
         run_id = identifier()
         with self.store.connection() as db:
             db.execute('INSERT INTO runs VALUES(?,?,?,?)', (run_id, self.owner, contract_id, now()))
@@ -62,7 +63,7 @@ class Runner:
     def prepare(self, run_id):
         receipt = self.review(run_id, save=False)
         original, events, source, result, bindings, impl = context(self.store, self.provider, run_id, self.owner)
-        if not result or not result['available'] or not source or not source['available'] or source['body'] != original['source']:
+        if not result or not result['available'] or not source or not source['available'] or canonical(source['body']) != canonical(original['source']):
             raise ValueError('Repair needs adequate current approved source/result evidence')
         if not any(c['status'] == 'FAIL' for c in receipt['conditions']) or result['body'].get('implementation') != 'append-edit':
             raise ValueError('No supported current seeded repair')

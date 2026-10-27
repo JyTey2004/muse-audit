@@ -1,5 +1,7 @@
 # Backend-first local testing checkpoint
 
+For the current supervised-testing claim, evidence map and acceptance limits, read [BASELINE-ASSURANCE.md](docs/BASELINE-ASSURANCE.md). The local hardening checkpoint tightens runner evidence validation; earlier receipts need a fresh review under the changed implementation.
+
 An **agent-callable task acceptance engine**, not a memory/log-summary service. `review_run(run_id, claimed_outcome)` retrieves the original approved contract, resolves a locally authorized run and **executes deterministic conditions against current separately stored provider state**. The claim is data and cannot establish PASS. No new receipt UI, hosting, tunnel or model integration was built.
 
 This extends the separate Python native-file package at `d93ada24baefcfde898ae8811dd4f9591ceb7b01`. The existing Workcheck Site/JS project at `ea11a855a68313bafa6ede095984f894da3b2d25` is unchanged. Its expense-tracker case and binding principles were ported to Python; no shared live engine, store or automatic sync is claimed. Four original native-file tools remain unchanged; the new entrypoint exposes those plus read-only `review_run`.

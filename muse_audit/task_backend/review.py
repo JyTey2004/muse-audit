@@ -5,7 +5,7 @@ from .contracts import validate
 from .identity import implementation
 from .provider import Provider
 from .store import Store, now
-from ..io import digest
+from ..io import canonical, digest
 
 
 def context(store, provider, run_id, owner):
@@ -30,28 +30,70 @@ def plan_context(bindings):
     return {k: v for k, v in bindings.items() if k != 'events'}
 
 
+def execution_coverage(events, original, bindings):
+    """Validate this controlled runner's complete recipe, not arbitrary host history."""
+    def selected(kind, origin='collector_observed'):
+        return [e for e in events if e['kind'] == kind and e['origin'] == origin]
+
+    approvals, starts, finishes = selected('contract.approval'), selected('run.started'), selected('run.finished')
+    requests = selected('tool.request')
+    terminals = selected('tool.response') + selected('tool.error')
+    source_reads = selected('source.readback', 'synthetic_provider_confirmed')
+    result_reads = selected('result.readback', 'synthetic_provider_confirmed')
+    gap = 'Incomplete or ambiguous instrumented evidence; no adequate executed check is established.'
+    if len(approvals) != 1 or len(starts) != 1 or len(finishes) > 1 or len(requests) != 1:
+        return 'INCOMPLETE', [], gap
+    approval, start, request = approvals[0], starts[0], requests[0]
+    body = request['body']
+    if not isinstance(body, dict) or not isinstance(approval['body'], dict):
+        return 'INCOMPLETE', [], gap
+    expected_operations = [['add', 'lunch', original['source']['lunch']],
+                           ['edit', 'lunch', original['source']['edited_lunch']],
+                           ['probe_add', 'travel', original['source']['travel']]]
+    if (digest(approval['body']) != bindings['approval'] or
+            not (approval['seq'] < start['seq'] < request['seq']) or
+            not isinstance(body.get('request_id'), str) or not body['request_id'] or
+            body.get('action') != 'synthetic.edit' or canonical(body.get('operations')) != canonical(expected_operations) or
+            type(body.get('source_revision')) is not int or body['source_revision'] < 1):
+        return 'INCOMPLETE', [], gap
+    if len(source_reads) != 1 or not isinstance(source_reads[0]['body'], dict):
+        return 'INCOMPLETE', [], gap
+    source = source_reads[0]
+    if (not (start['seq'] < source['seq'] < request['seq']) or
+            source['body'].get('run_id') != bindings['run_id'] or source['body'].get('kind') != 'source' or
+            source['body'].get('seq') != body['source_revision'] or canonical(source['body'].get('body')) != canonical(original['source'])):
+        return 'INCOMPLETE', [], gap
+    actions = ['synthetic.read', 'synthetic.add', 'synthetic.edit', 'synthetic.add']
+    if not finishes:
+        if not terminals and not result_reads:
+            return 'PENDING', actions, 'Captured request has no terminal response or completion yet.'
+        return 'INCOMPLETE', [], 'Completion record is absent after a terminal response; fulfillment cannot be established.'
+    if len(terminals) != 1 or len(result_reads) != 1:
+        return 'INCOMPLETE', [], gap
+    reply, readback, finish = terminals[0], result_reads[0], finishes[0]
+    if not isinstance(reply['body'], dict) or not isinstance(readback['body'], dict):
+        return 'INCOMPLETE', [], gap
+    if (reply['kind'] != 'tool.response' or reply['body'].get('request_id') != body['request_id'] or
+            reply['body'].get('success') is not True or type(reply['body'].get('provider_revision')) is not int or
+            not (request['seq'] < reply['seq'] < readback['seq'] < finish['seq']) or
+            readback['body'].get('run_id') != bindings['run_id'] or readback['body'].get('kind') != 'result' or
+            readback['body'].get('seq') != reply['body']['provider_revision']):
+        return 'INCOMPLETE', [], gap
+    return 'COMPLETE', actions + ['synthetic.read'], ''
+
+
 def review_run(root, owner, run_id, claimed_outcome):
     if not isinstance(claimed_outcome, str) or len(claimed_outcome) > 10000:
         raise ValueError('Claim must be bounded text; never proof')
     store, provider = Store(root, readonly=True), Provider(root, readonly=True)
     original, events, source, result, bindings, impl = context(store, provider, run_id, owner)
-    started_events = [e for e in events if e['kind'] == 'run.started' and e['origin'] == 'collector_observed']
-    finished_events = [e for e in events if e['kind'] == 'run.finished' and e['origin'] == 'collector_observed']
-    started, finished = bool(started_events), bool(finished_events)
-    pending = started and not finished
+    execution_status, captured_actions, execution_gap = execution_coverage(events, original, bindings)
+    pending = execution_status == 'PENDING'
+    observed_requests = execution_status == 'COMPLETE'
     coverage = []
     checks = []
-    source_ok = bool(source and source['available'] and source['body'] == original['source'])
+    source_ok = bool(source and source['available'] and canonical(source['body']) == canonical(original['source']))
     action_events = [e for e in events if e['kind'] == 'tool.request' and e['origin'] == 'collector_observed']
-    terminal_events = [e for e in events if e['kind'] in ('tool.response','tool.error') and e['origin'] == 'collector_observed']
-    request_ids = [e['body'].get('request_id') for e in action_events]
-    observed_requests = started and finished and bool(action_events) and len(set(request_ids)) == len(request_ids) and all(isinstance(i, str) for i in request_ids)
-    for request in action_events:
-        replies = [e for e in terminal_events if e['body'].get('request_id') == request['body'].get('request_id')]
-        if not finished or len(replies) != 1 or not (started_events[0]['seq'] < request['seq'] < replies[0]['seq'] < finished_events[-1]['seq']) or replies[0]['kind'] != 'tool.response' or replies[0]['body'].get('success') is not True:
-            observed_requests = False
-    if any(e['body'].get('request_id') not in request_ids for e in terminal_events):
-        observed_requests = False
     repair_requests = [e for e in events if e['kind'] == 'repair.request' and e['origin'] == 'collector_observed']
     repair_completions = [e for e in events if e['kind'] == 'repair.completed' and e['origin'] == 'synthetic_provider_confirmed']
     for request in repair_requests:
@@ -60,12 +102,26 @@ def review_run(root, owner, run_id, claimed_outcome):
             approval = db.execute('SELECT * FROM repair_approvals WHERE plan_hash=? AND run_id=?', (key, run_id)).fetchone()
             applied = db.execute('SELECT * FROM repair_results WHERE plan_hash=? AND run_id=?', (key, run_id)).fetchone()
         completion = [e for e in repair_completions if e['body'].get('plan_hash') == key and e['seq'] > request['seq']]
-        if not approval or digest(json.loads(approval['body'])) != approval['hash'] or not applied or len(completion) != 1 or completion[0]['body'].get('revision') != applied['revision'] or request['body'].get('approved_digest') != key:
+        approval_body = json.loads(approval['body']) if approval else None
+        valid_approval = (isinstance(approval_body, dict) and digest(approval_body) == approval['hash'] and
+                          approval_body.get('decision') == 'approved' and approval_body.get('owner') == owner and
+                          approval_body.get('run_id') == run_id and approval_body.get('plan_hash') == key)
+        finished = [e for e in events if e['kind'] == 'run.finished' and e['origin'] == 'collector_observed']
+        if (not valid_approval or not applied or len(completion) != 1 or len(finished) != 1 or
+                request['seq'] <= finished[0]['seq'] or
+                completion[0]['body'].get('revision') != applied['revision'] or request['body'].get('approved_digest') != key):
             observed_requests = False
+    repair_keys = [e['body'].get('plan_hash') for e in repair_requests]
+    if len(set(repair_keys)) != len(repair_keys) or any(e['body'].get('plan_hash') not in repair_keys for e in repair_completions):
+        observed_requests = False
     if result and result['operation_key'].startswith('repair:'):
         key = result['operation_key'][len('repair:'):]
         if not any(e['body'].get('plan_hash') == key for e in repair_requests) or not any(e['body'].get('plan_hash') == key and e['body'].get('revision') == result['seq'] for e in repair_completions):
             observed_requests = False
+    if pending and (repair_requests or repair_completions):
+        pending = False
+        execution_status = 'INCOMPLETE'
+        execution_gap = 'Repair evidence precedes original task completion; the recorded lifecycle is inconsistent.'
     all_action_events = action_events + repair_requests
     implementation_current = not impl.get('source_changed_since_process_start', False)
     for r in original['requirements']:
@@ -83,10 +139,10 @@ def review_run(root, owner, run_id, claimed_outcome):
             explanation = 'Selected source read-back unavailable.'
         elif not source_ok:
             status, explanation, executed = 'FAIL', 'Current source differs from the ORIGINAL approved source.', True
-        elif not observed_requests or not finished:
-            explanation = 'Necessary instrumented execution evidence is missing; claims cannot replace it.'
+        elif not observed_requests:
+            explanation = execution_gap or 'Necessary instrumented repair evidence is missing or inconsistent; claims cannot replace it.'
         elif r['checker'] == 'allowed_actions':
-            actual = [e['body'].get('action') for e in all_action_events]
+            actual = captured_actions + [e['body'].get('action') for e in repair_requests]
             status = 'PASS' if all(x in original['allowed_actions'] for x in actual) else 'FAIL'
             explanation, executed = 'Compared captured requests to original allowed-action list.', True
         elif not result or not result['available']:
@@ -126,6 +182,7 @@ def review_run(root, owner, run_id, claimed_outcome):
                'original_contract': original, 'bindings': bindings, 'implementation': impl,
                'freshness': {'prior_assurance': freshness, 'observed_now_only': True, 'prior_digest': digest(prior) if prior else None},
                'conditions': checks, 'counts': dict(Counter(c['status'] for c in checks)), 'coverage_gaps': coverage,
+               'execution_evidence': {'status': execution_status if observed_requests or pending else 'INCOMPLETE', 'gap': execution_gap if observed_requests or pending else execution_gap or 'Repair evidence is incomplete or inconsistent.', 'scope': 'Controlled synthetic runner recipe only; no coverage of uninstrumented host calls.'},
                'current_decision': 'SELECTED_CHECKS_PASS' if complete else 'UNRESOLVED', 'completion_assured': complete,
                'observations': {'observed_at': now(), 'origin': 'synthetic_provider_confirmed', 'source': source, 'result': result},
                'repair_guidance': 'Review an exact copy-only repair plan; keep original requirements/source/privacy. Rerun every condition.',
