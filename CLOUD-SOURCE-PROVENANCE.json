@@ -1,0 +1,229 @@
+{
+  "upstream_repository": "JyTey2004/muse-audit",
+  "upstream_commit": "d93ada24baefcfde898ae8811dd4f9591ceb7b01",
+  "source_route": "Authenticated GitHub connector, base64 file contents; Git blob SHA-1 checked for all 41 upstream blobs",
+  "imported_files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "git_blob_sha1": "d98bc83a9303b155f6552c5538256cd51304da67",
+      "bytes": 2671
+    },
+    {
+      "path": ".gitignore",
+      "git_blob_sha1": "b869403de7162a4abc8d727d5f96db954cb7b357",
+      "bytes": 158
+    },
+    {
+      "path": "AGENTS.md",
+      "git_blob_sha1": "dfc25cc7c89028b17f1e2123592c9f8fe7487ed5",
+      "bytes": 1092
+    },
+    {
+      "path": "CLAUDE-CODE.md",
+      "git_blob_sha1": "1774cdac0c9d75d28a5da221d0b3536b1711433d",
+      "bytes": 4786
+    },
+    {
+      "path": "CONSUMER-VALIDATION.md",
+      "git_blob_sha1": "c18eb0e6145587ad921210e9878d48d474a9969a",
+      "bytes": 4603
+    },
+    {
+      "path": "IMPORT-MANIFEST.json",
+      "git_blob_sha1": "8225a2ed9a04df6dbf0d369cb85b93167e9815bd",
+      "bytes": 3306
+    },
+    {
+      "path": "LOCAL-VERIFICATION.md",
+      "git_blob_sha1": "89a1baa9e1337b5e22091d39195aaeda54d5b6d9",
+      "bytes": 6648
+    },
+    {
+      "path": "MUSE-CODE.md",
+      "git_blob_sha1": "1cef1d7bd0fa7012e767861640c2136c357b0cee",
+      "bytes": 5097
+    },
+    {
+      "path": "QUICKSTART-MAC.md",
+      "git_blob_sha1": "4aeee40db4f92ca9cdf48fb37993522201682869",
+      "bytes": 4380
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha1": "e0a3f2c37a870802b5ffe82b52925093ec08b210",
+      "bytes": 11050
+    },
+    {
+      "path": "REVIEW.md",
+      "git_blob_sha1": "f5c0359688f0d0b6f2dbed526c97befe2c6459cf",
+      "bytes": 5780
+    },
+    {
+      "path": "constraints-python312.txt",
+      "git_blob_sha1": "c4f008b9300f5a20a192acb75895f7e4e9d2ab0a",
+      "bytes": 904
+    },
+    {
+      "path": "examples/home_office/budget-preview.png",
+      "git_blob_sha1": "854a21db54a617cdde5e8c17f42f4652916392c0",
+      "bytes": 68483
+    },
+    {
+      "path": "examples/home_office/budget.xlsx",
+      "git_blob_sha1": "8f0d7aed7e43d12711bed55e5f983935bb0ad2dd",
+      "bytes": 4210
+    },
+    {
+      "path": "examples/home_office/job.json",
+      "git_blob_sha1": "33d8e9632e061b939b612d96db958be6ded6e853",
+      "bytes": 2806
+    },
+    {
+      "path": "examples/home_office/prices.json",
+      "git_blob_sha1": "ea4f54116e35dee278af29518bcb2a0d996003b6",
+      "bytes": 178
+    },
+    {
+      "path": "examples/study_summary/job.json",
+      "git_blob_sha1": "28db98f4b001eeedaf67253cac3d9504dcfa69f4",
+      "bytes": 1707
+    },
+    {
+      "path": "examples/study_summary/study-log.txt",
+      "git_blob_sha1": "04adf2b86d37b0a98cd9a5c9fcbefbf87fa8ffc9",
+      "bytes": 138
+    },
+    {
+      "path": "examples/study_summary/study-summary.docx",
+      "git_blob_sha1": "6d021dd6836fe1a4ecfcb5adee4c1ddcf96c58bf",
+      "bytes": 36907
+    },
+    {
+      "path": "muse_audit/__init__.py",
+      "git_blob_sha1": "abc4d6f4f86bf2844b5243df6975badc8484042d",
+      "bytes": 105
+    },
+    {
+      "path": "muse_audit/adapters/__init__.py",
+      "git_blob_sha1": "2dd0ac330de291ce51004ce0e9fadf9ee51b881d",
+      "bytes": 73
+    },
+    {
+      "path": "muse_audit/adapters/docx_report.py",
+      "git_blob_sha1": "3e13188156d1733215e5d72ee8bfaa9fe26b9349",
+      "bytes": 11216
+    },
+    {
+      "path": "muse_audit/adapters/xlsx_budget.py",
+      "git_blob_sha1": "ea0d932ab473a9e5a0a2d108b8dc2506d4c5bf4d",
+      "bytes": 9728
+    },
+    {
+      "path": "muse_audit/cli.py",
+      "git_blob_sha1": "48db03930395e0324aefc9d070fe859a6e991aa6",
+      "bytes": 2859
+    },
+    {
+      "path": "muse_audit/core.py",
+      "git_blob_sha1": "3fc5149324a7cd98887c7f5aa1a8ae1ac7cc1ae0",
+      "bytes": 12374
+    },
+    {
+      "path": "muse_audit/demo.py",
+      "git_blob_sha1": "34dec7cec18905db5521a00b4d5366cf6824b55c",
+      "bytes": 4660
+    },
+    {
+      "path": "muse_audit/fixtures_docx.py",
+      "git_blob_sha1": "997bd588599dec9ae16b8fcf2ab03d37a192b940",
+      "bytes": 3510
+    },
+    {
+      "path": "muse_audit/io.py",
+      "git_blob_sha1": "2e7746dc54e553ac81686fbbbc8b2afe3a15204d",
+      "bytes": 3198
+    },
+    {
+      "path": "muse_audit/model_adapter.py",
+      "git_blob_sha1": "cde4989cf648bd090018fd3865e90294fce1d556",
+      "bytes": 507
+    },
+    {
+      "path": "muse_audit/report.py",
+      "git_blob_sha1": "8389b61105d3972d2ade81c464cecd3d49df61dc",
+      "bytes": 3010
+    },
+    {
+      "path": "muse_audit/server.py",
+      "git_blob_sha1": "688c88675cc09f5d1dfa8849c2c6578c146aea38",
+      "bytes": 1915
+    },
+    {
+      "path": "pyproject.toml",
+      "git_blob_sha1": "413eeb2edaeb05fcaae9e147ab42ab23414e0d97",
+      "bytes": 490
+    },
+    {
+      "path": "requirements.txt",
+      "git_blob_sha1": "e572890c7f86956064f5009b0e5d7492b8e93271",
+      "bytes": 188
+    },
+    {
+      "path": "run_mcp.py",
+      "git_blob_sha1": "7913ee442c9b4a58fd0ddf5e7ca8659c65a29c1f",
+      "bytes": 185
+    },
+    {
+      "path": "scripts/prepare_claude_code.py",
+      "git_blob_sha1": "0e32647fa78ea52726e0b70b7ab0821db06c5e69",
+      "bytes": 2791
+    },
+    {
+      "path": "start-claude-code.command",
+      "git_blob_sha1": "8517fe5363ea96f58613856266ab4297c7d51d79",
+      "bytes": 1144
+    },
+    {
+      "path": "start-demo.command",
+      "git_blob_sha1": "a359cec090e964bb99f5431fb9cb309d5713f1a7",
+      "bytes": 391
+    },
+    {
+      "path": "tests/test_core.py",
+      "git_blob_sha1": "a7c2caa3f70b21fe310ac43eb6703ea19d178a78",
+      "bytes": 13947
+    },
+    {
+      "path": "tests/test_demo.py",
+      "git_blob_sha1": "87b1808103b3195aecb1c81478e8cbab1f0ff20f",
+      "bytes": 965
+    },
+    {
+      "path": "tests/test_docx_report.py",
+      "git_blob_sha1": "2c919a906d0667dbdf3af1d11c5e24a2c809e53a",
+      "bytes": 5982
+    },
+    {
+      "path": "tests/test_protocol.py",
+      "git_blob_sha1": "a10db43e0a6f835d3e67c3383b9c1f133a2468b4",
+      "bytes": 3385
+    }
+  ],
+  "local_import_checkpoint": "775a9ba",
+  "planning_archive": {
+    "library_file_id": "libfile_633bb6daf7488191bbf21e1f31a87ab3",
+    "sha256": "fa0f2ffbd958b8c053c95559ad8b63ade53d9c67a0f8fc5b4bbbb208f3b2627e",
+    "spec_git_blobs": {
+      "HACKATHON-SPEC.md": "a389b5c1c55d6176253ccfc8b967ffbdb628e12c",
+      "CHECKPOINT-PLAN.md": "5c2fc426be66dd9f0d4f8ef3d56c94ec0ac42749"
+    }
+  },
+  "workcheck": {
+    "path": "/workspace/sites/check-my-ai-work",
+    "commit": "ea11a855a68313bafa6ede095984f894da3b2d25",
+    "reuse": "Seeded expense-tracker test concept and full-implementation-binding design ported to Python. No JS runtime port/embedding or shared run store. Site/JS source unchanged."
+  },
+  "remote_writes": false,
+  "mac_files_accessed": false,
+  "native_baseline_runtime_code_hash": "c39a92e89634ba9a9a16d7820fd4d08dc8ad78da1b485a729d9db7cf423c62ea"
+}

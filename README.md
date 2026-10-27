@@ -1,3 +1,9 @@
+# Current backend-first checkpoint
+
+Start with [BACKEND-QUICKSTART.md](BACKEND-QUICKSTART.md) for the persisted synthetic runner and new read-only MCP `review_run`. Existing native-file tools, fixtures and instructions below are preserved. The web Workcheck artifact remains separate and unchanged. No remote push, hosted service or consumer Muse validation is implied.
+
+---
+
 # Muse audit companion — offline MCP prototype
 
 **A real MCP stdio server, a shared audit/repair kernel, and two unrelated synthetic native-file jobs.**
