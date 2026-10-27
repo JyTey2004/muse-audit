@@ -12,7 +12,8 @@ Executed locally with CPython 3.12.13 on macOS 27.0.1, Apple silicon (arm64).
 | Synthetic two-job demo | PASS, expected unresolved outcomes retained |
 | Imported Python runtime, tests and example bytes | Unchanged |
 | Consumer Muse Custom Connector/tool flow | BLOCKED at access gate; connector setup and calls NOT RUN |
-| Live Muse Code | NOT RUN; separate developer host, not a B2C substitute |
+| Muse Code startup/discovery | PASS, offline echo provider; exactly four MCP tools discovered |
+| Live Muse Code model tool/evidence/repair flow | NOT RUN; paused by user with no billing changes; separate from B2C |
 | Word/Excel/Numbers rendering and recalculation | NOT RUN |
 | Historical older-project 78 tests | NOT RUN on Mac; excluded projects |
 
@@ -41,3 +42,9 @@ Two print/stream-JSON runs recorded 12 actual tool calls: capabilities, both ini
 Repaired budget: 6 PASS / 1 FAIL / 1 UNKNOWN, REVISE, with FRESH unchanged receipt. Repaired DOCX: 3 PASS / 0 FAIL / 1 UNKNOWN, UNRESOLVED, also FRESH. Changed-source copy: STALE prior evidence with newly executed 5 PASS / 2 FAIL / 1 UNKNOWN. Cap, title, weekly plan, source bytes, requirements and original examples were preserved. Raw events, final host text and machine-verified summaries remain in ignored `.local/claude-code/host-evidence/`.
 
 The 54-test suite and standalone real MCP checks passed again after local launcher setup. This is a bounded Claude Code developer-host result, not a Desktop UI or consumer Muse result. Consumer Muse remains NOT RUN / UNTESTED; native Office rendering/recalculation remains NOT RUN. See CLAUDE-CODE.md and the private field guide for the reusable local launcher.
+
+## Muse Code installation and offline discovery — 27 October 2026
+
+Muse Code 1.4.13 (1.4.13-R6996.1) was installed from Meta's official source. Explicitly approved device sign-in succeeded, with its credential stored outside the checkout. The read-only allowance check returned `no_allowance`; the developer portal was accessible. No Meta model request, payment or subscription purchase was made. A separate promotional-credit content-use notice prevents assuming that a Contributor-off flag alone satisfies the requested privacy mode. The user chose to keep live model testing paused, with no billing changes.
+
+An offline Muse Code echo run initialized this stdio server and discovered exactly the four expected tools. This is actual host startup/discovery evidence, with zero Meta model requests; model-driven audit calls, evidence display and correction/recheck in Muse Code remain NOT RUN. The full 54 tests, standalone real MCP checks and dependency consistency passed again. Consumer Muse remains NOT RUN / UNTESTED. See [MUSE-CODE.md](MUSE-CODE.md) for configuration limits and remaining gates; account-specific observations and raw events stay in ignored `.local/`.
