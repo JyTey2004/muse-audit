@@ -51,6 +51,26 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python -m unittest discover -s tests -v
 
+      - name: Check Node runtime (fixed JavaScript verifier)
+        run: node --version
+
+      - name: Run persisted backend tests and protocol
+        run: python -m unittest discover -s tests_backend -v
+
+      - name: Run Claude adapter OFFLINE tests and real MCP protocol
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m unittest discover -s tests_adapter -v
+          python tests_adapter/test_protocol_adapter.py
+
+      - name: Run persisted backend and adapter offline demos
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m muse_audit.task_backend.demo --output "$RUNNER_TEMP/stardive-backend-demo"
+          python tests_adapter/demo.py --output "$RUNNER_TEMP/stardive-adapter-demo"
+
       - name: Run real MCP subprocess protocol checks
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python tests/test_protocol.py
@@ -74,5 +94,7 @@ jobs:
 
           **Consumer Muse integration: NOT RUN / UNTESTED (access gate).**
           No Muse account, consumer connector, hosted endpoint or model call is tested.
+          Real Claude Code model-driven sessions run separately on an authorized Mac, not in CI.
+          Adapter host streams in offline tests are labeled test doubles; Node checks and MCP calls actually execute.
           Native Office rendering and other Python/OS combinations are not covered.
           SUMMARY
