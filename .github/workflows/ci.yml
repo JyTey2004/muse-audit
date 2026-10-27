@@ -1,0 +1,78 @@
+name: Offline tests and MCP protocol
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: muse-audit-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Python 3.12 / offline verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            constraints-python312.txt
+
+      - name: Install pinned dependencies
+        id: install
+        run: python -m pip install --index-url https://pypi.org/simple -r requirements.txt -c constraints-python312.txt
+
+      - name: Check dependency consistency
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: python -m pip check
+
+      - name: Run all unit and integration tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: python -m unittest discover -s tests -v
+
+      - name: Run real MCP subprocess protocol checks
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: python tests/test_protocol.py
+
+      - name: Run synthetic offline demo
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: python -m muse_audit.demo --output "$RUNNER_TEMP/muse-audit-demo"
+
+      - name: Verify original examples remain unchanged
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: git diff --exit-code -- examples
+
+      - name: Record validation scope
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          ## Validation scope
+          This job checks the pinned Python 3.12 environment, offline synthetic jobs,
+          and real MCP stdio subprocess behavior. Step outcomes above determine success.
+          Expected artifact failures, UNKNOWN claims and STALE evidence remain visible.
+
+          **Consumer Muse integration: NOT RUN / UNTESTED (access gate).**
+          No Muse account, consumer connector, hosted endpoint or model call is tested.
+          Native Office rendering and other Python/OS combinations are not covered.
+          SUMMARY

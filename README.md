@@ -56,6 +56,12 @@ python3 -m muse_audit.cli --workspace /tmp/budget-repaired-1 recheck job.json \
 
 Exit codes: **0** command succeeded with no unresolved audit decision (e.g. plan/demo); **2** usable audit result contains fail/unknown/blocked/stale, or prior evidence is stale/invalid; **1** command/input error. An expected `2` is not a crashed test. Do not chain intentional failing audits with `&&` and expect later commands to run.
 
+## Automated verification
+
+[GitHub Actions](https://github.com/JyTey2004/muse-audit/actions/workflows/ci.yml) runs on pushes, pull requests and manual dispatch. The [workflow](.github/workflows/ci.yml) uses Python 3.12 on Ubuntu 24.04, installs the unchanged requirements and constraints, checks dependency consistency, runs the full unittest suite and standalone real MCP subprocess checks, runs the synthetic demo, and verifies the original examples remain unchanged. The protocol and demo steps still run after a test failure when dependency installation succeeded; a failed step keeps the job failed.
+
+The workflow has read-only repository permissions and uses official actions pinned to commit hashes. No project credentials or model calls are needed. Consumer Muse integration remains **NOT RUN / UNTESTED**, and the workflow summary records that boundary. Other Python/OS combinations and native Office rendering are not covered by this job. Check a completed Actions run for its exact commit and result; workflow configuration alone is not passing CI evidence.
+
 ## Contract and trust boundary
 
 Each selected bundle has `job.json`, one native artifact, and selected sources. JSON schema version 1 requires exactly:

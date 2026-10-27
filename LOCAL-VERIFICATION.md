@@ -22,7 +22,7 @@ Runtime implementation SHA-256: `c39a92e89634ba9a9a16d7820fd4d08dc8ad78da1b485a7
 
 The local demo keeps the budget at 6 PASS / 1 FAIL / 1 UNKNOWN after the fee repair: 78,000 cents exceeds the preserved 75,000-cent cap. The DOCX becomes 3 PASS / 0 FAIL / 1 UNKNOWN. Source-content mutation makes prior evidence STALE. Original examples and contracts remain unchanged.
 
-Detailed setup/test logs, local environment metadata, generated reports, and the prepared absolute-path Muse Code settings entry are retained in ignored `.local/`. Full private research and historical generated evidence were not imported. The user selected the private [GitHub repository](https://github.com/JyTey2004/muse-audit) and no license. Its initial source checkpoint contains only the standalone project; local logs and results are excluded. Hosted CI is NOT RUN; local verification does not establish a consumer release.
+Detailed setup/test logs, local environment metadata, generated reports, and the prepared absolute-path Muse Code settings entry are retained in ignored `.local/`. Full private research and historical generated evidence were not imported. The user selected the private [GitHub repository](https://github.com/JyTey2004/muse-audit) and no license. Its initial source checkpoint contains only the standalone project; local logs and results are excluded. Hosted CI was NOT RUN at initial import. The added [offline CI workflow](.github/workflows/ci.yml) has separate [commit-bound run results](https://github.com/JyTey2004/muse-audit/actions/workflows/ci.yml); local or hosted offline verification does not establish a consumer release.
 
 ## Follow-up launch verification
 
