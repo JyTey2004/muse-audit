@@ -1,6 +1,8 @@
 # Current backend-first checkpoint
 
-Start with [BACKEND-QUICKSTART.md](BACKEND-QUICKSTART.md) for the persisted synthetic runner and new read-only MCP `review_run`. Existing native-file tools, fixtures and instructions below are preserved. The web Workcheck artifact remains separate and unchanged. No remote push, hosted service or consumer Muse validation is implied.
+Start with [BACKEND-QUICKSTART.md](BACKEND-QUICKSTART.md) for the persisted synthetic runner and new read-only MCP `review_run`. Existing native-file tools, fixtures and instructions below are preserved. The web Workcheck artifact remains separate and unchanged. No remote push or hosted service is implied.
+
+Consumer Muse was tested on 28 October: it generated a real budget workbook, then ran the existing four-tool native-file MCP server on its own cloud computer. The returned protocol evidence and independent Mac replay agree: **7 PASS, 0 FAIL, 1 UNKNOWN**, with a **FRESH** recheck. See [CONSUMER-VALIDATION.md](CONSUMER-VALIDATION.md) for the bounded app flow and its limits. This is a task-local client; the Mac's Claude `review_run` store and a registered Muse connector remain unconnected.
 
 ---
 
@@ -12,11 +14,11 @@ The user's wider Muse audience is the product direction; this is a narrow testab
 
 Start with [QUICKSTART-MAC.md](QUICKSTART-MAC.md). This standalone checkout imports the reviewed prototype for local user testing. Development remains cloud-first. The [GitHub repository](https://github.com/JyTey2004/muse-audit) is private. No license has been selected or granted by this checkpoint.
 
-The [private step-by-step field guide](https://muse-audit-field-guide.tey-jia-ye.chatgpt.site) documents the complete workflow. For the scoped local developer host, see [CLAUDE-CODE.md](CLAUDE-CODE.md) and `start-claude-code.command`. [MUSE-CODE.md](MUSE-CODE.md) records Muse Code installation and offline MCP discovery; its live model flow remains untested. Consumer Muse remains untested.
+The [private step-by-step field guide](https://muse-audit-field-guide.tey-jia-ye.chatgpt.site) documents the earlier workflow. For the scoped local developer host, see [CLAUDE-CODE.md](CLAUDE-CODE.md) and `start-claude-code.command`. [MUSE-CODE.md](MUSE-CODE.md) records Muse Code installation and offline MCP discovery; its live model flow remains untested. The later consumer Muse trial is documented above.
 
 ## What is implemented
 
-- Official Python MCP SDK **1.29.0**, pinned maintenance-line version already available in the cloud runtime. Actual subprocess `initialize`, `tools/list`, `tools/call` and error/recovery tests negotiate **2025-11-25**. This is not a hand-written protocol stub. Muse Code initialized/discovered the tools in an offline echo run; **live Muse Code model tool use and consumer Muse remain untested**.
+- Official Python MCP SDK **1.29.0**, pinned maintenance-line version already available in the cloud runtime. Actual subprocess `initialize`, `tools/list`, `tools/call` and error/recovery tests negotiate **2025-11-25**. This is not a hand-written protocol stub. Muse Code initialized/discovered the tools in an offline echo run; **live Muse Code model tool use remains untested**. Consumer Muse's separate bounded trial is recorded above.
 - `audit_capabilities`, `audit_job`, `prepare_repair`, `recheck_job`: all MCP tools are read-only. Patches must be reviewed and explicitly applied through the local CLI, to a **new** bundle only.
 - Shared declared requirements, protected commitments, artifact/source versions and SHA-256 content pins, implementation-code hash, installed parser/SDK versions, exact evidence locations, full rechecks and stale/forged receipt detection.
 - XLSX: actual cells/formulas read with openpyxl; exact integer-cent source comparisons; independently evaluate a narrow single-column `SUM` without trusting cached displayed values; required-cell inclusion; approved cap; protected cells.
@@ -68,7 +70,7 @@ Exit codes: **0** command succeeded with no unresolved audit decision (e.g. plan
 
 [GitHub Actions](https://github.com/JyTey2004/muse-audit/actions/workflows/ci.yml) runs on pushes, pull requests and manual dispatch. The [workflow](.github/workflows/ci.yml) uses Python 3.12 on Ubuntu 24.04, installs the unchanged requirements and constraints, checks dependency consistency, runs the full unittest suite and standalone real MCP subprocess checks, runs the synthetic demo, and verifies the original examples remain unchanged. The protocol and demo steps still run after a test failure when dependency installation succeeded; a failed step keeps the job failed.
 
-The workflow has read-only repository permissions and uses official actions pinned to commit hashes. No project credentials or model calls are needed. Consumer Muse integration remains **NOT RUN / UNTESTED**, and the workflow summary records that boundary. Other Python/OS combinations and native Office rendering are not covered by this job. Check a completed Actions run for its exact commit and result; workflow configuration alone is not passing CI evidence.
+The workflow has read-only repository permissions and uses official actions pinned to commit hashes. No project credentials or model calls are needed. Consumer Muse is **NOT RUN in CI**; the manual consumer trial above is separate evidence. Other Python/OS combinations and native Office rendering are not covered by this job. Check a completed Actions run for its exact commit and result; workflow configuration alone is not passing CI evidence.
 
 ## Contract and trust boundary
 

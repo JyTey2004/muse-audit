@@ -1,8 +1,32 @@
 # Consumer Muse validation checklist
 
-The B2C target is consumer Muse. Muse Code is a separate optional developer host. Current runtime: unchanged offline MCP stdio prototype; no consumer-host integration has passed.
+The B2C target is consumer Muse. Muse Code is a separate optional developer host. A bounded consumer-chat trial now runs the existing native-file MCP server on Muse's own cloud computer. This is a task-local Python client, not a registered connector or access to the Mac's local stdio server.
 
-## Latest local checkpoint — 27 October 2026
+## Consumer app checkpoint — 28 October 2026
+
+The signed-in Muse Mac app (version 9.0) was accessible. Settings listed built-in connectors but no custom MCP URL field. A read-only diagnostic reached the selected Mac configuration file. Muse reported that its exposed Mac tools could not spawn a local shell or MCP client, and made no local `review_run` invocation. Local file access is not local process access.
+
+Muse then generated a new home-office XLSX on its own computer from synthetic quotes: desk $450, chair $250 and delivery $80, with a fixed $800 cap and the existing monitor retained. The operator froze the separate test contract and sources before generation. This is a new scenario; the shipped $750-cap fixture is unchanged. The generated file was downloaded, preserved byte-for-byte and independently audited on the Mac: **7 PASS, 0 FAIL, 1 UNKNOWN**. Chair comfort remains unsupported and the overall decision is **UNRESOLVED**. No natural generation defect was observed and no defect was planted.
+
+The existing backend source at implementation checkpoint `e082a027381e4714741f83e945ef03d3cf96248d`, a hash manifest, the frozen task and a small SDK client were then uploaded to the same private Muse chat. The client first verifies package and artifact hashes. It starts `run_mcp.py` in a subprocess using the official MCP SDK 1.29.0, checks the exact four read-only tools, calls `audit_capabilities`, `audit_job` and `recheck_job`, and verifies the selected inputs remain unchanged. It does not expose an apply tool. Muse used a fresh virtualenv with the existing pinned dependencies on Python 3.12.3/Linux. The returned protocol is `2025-11-25`.
+
+Muse returned the actual receipt, raw MCP responses, fresh recheck, environment record, stderr, original workbook and original package manifest. Independent Mac replay matched the checks and counts, artifact bytes, manifest and backend code binding. The cloud result is **7 PASS, 0 FAIL, 1 UNKNOWN**, with **FRESH** recheck. The nonfatal Pydantic warning remains in stderr.
+
+Native-app generation and download were observed directly. The later upload, execution activity and receipt delivery were exercised through the signed-in Muse web view of the same conversation after native UI automation stopped responding. This is consumer Muse execution on its cloud computer, not Muse Code. No hosted endpoint, tunnel, directory submission, new account credential or permission-policy change was needed.
+
+Evidence is retained outside Git: frozen inputs, original downloaded workbook, raw protocol results, execution activity observations, exported receipts and cross-host comparison. The probe observes only its own subprocess; it does not capture unrelated Muse tools or hidden host logs. Returned evidence is unsigned, source quotes are synthetic, and there is no hostile-file sandbox or blanket completion certification. This trial does not connect the Claude run store to Muse or validate the separate `review_run` adapter in Muse.
+
+### Tested app experience
+
+One setup installs the trusted, bounded verifier in Muse's task workspace. The user then asks for the task in ordinary language. New tasks need a confirmed supported checklist; existing tasks can be rechecked with a short request. Technical identifiers, package installation, source pins and protocol details belong behind the result, not in repeated user prompts.
+
+The chat should lead with the useful outcome, for example: **“Budget checks pass: $780 total, $20 under cap.”** Then show **“Not verified: chair comfort.”** Attach the workbook and receipt/evidence. Keep prior results and make changed or missing bound inputs block acceptance. Review repairs separately before any new artifact is written. This remains a bounded budget workflow; arbitrary task understanding is not implemented.
+
+A local Muse skill, **Stardive Budget Check**, was saved with the frozen bindings and reviewed from its downloaded copy. Its generic connector fallback was removed, and new-budget confirmation asks for ordinary task requirements while setup owns technical mappings and pins. The short request **“Recheck my budget”** then loaded that skill, executed the unmodified MCP probe into a fresh output directory and delivered the concise result, workbook, fresh receipt and raw evidence in the same conversation. The second receipt has a later execution time and identical original bindings/checks. Both cloud receipts and the Mac replay were retained. Cross-chat discovery and a new-budget setup flow were not tested.
+
+Meta's [connector help](https://www.meta.com/help/superintelligence/1687253048996149/) and [security architecture](https://research.meta.ai/blog/security-and-safety-for-ai-agents-our-approach-with-muse), checked 28 October, describe chat-created custom connectors and Muse's cloud computer. They do not by themselves establish a native Mac stdio interface. The execution observations above establish only this tested task-local route.
+
+## Prior local checkpoint — 27 October 2026
 
 The consumer access check did not reach Custom Connector setup. Account-specific gate details are retained only in ignored local notes. Consumer tool invocation, evidence display and correction/recheck are **NOT RUN**. The accepted connection method, endpoint/transport, authentication and file exchange are **UNKNOWN**. No bridge, tunnel, hosted service, credentials or persistent grants were created.
 

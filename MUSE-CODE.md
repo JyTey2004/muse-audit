@@ -1,6 +1,6 @@
 # Muse Code local checkpoint — 27 October 2026
 
-Muse Code is a separate developer host. **Consumer Muse integration remains NOT RUN / UNTESTED.**
+Muse Code is a separate developer host. This is the dated 27 October checkpoint. For the later bounded consumer Muse app trial on 28 October, see [CONSUMER-VALIDATION.md](CONSUMER-VALIDATION.md); it does not validate live Muse Code model use.
 
 ## Observed status
 
