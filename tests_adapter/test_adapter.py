@@ -29,6 +29,17 @@ class AdapterTests(unittest.TestCase):
   root,work,run=self.fixture(BAD);r=review_run(root,'owner',run,'Done');self.assertEqual(r['conditions'][0]['status'],'FAIL')
  def test_missing_stream_withholds_all_executable_passes(self):
   root,work,run=self.fixture();(root/run/'build-stream.jsonl').unlink();r=review_run(root,'owner',run,'Done');self.assertEqual(r['counts']['PASS'],0)
+ def test_missing_captured_evidence_stales_prior_receipt_without_database_writes(self):
+  root,work,run=self.fixture();record_receipt(root,'owner',run,'Done');database=(root/'claude-runs.sqlite3').read_bytes()
+  for name in ('build-stream.jsonl','build-stderr.txt','build-mcp.json'):
+   with self.subTest(name=name):
+    path=root/run/name;original=path.read_bytes()
+    try:
+     path.unlink();r=review_run(root,'owner',run,'Done')
+     self.assertEqual(r['counts']['PASS'],0);self.assertEqual(r['freshness']['prior_assurance'],'STALE')
+     self.assertIsNone(r['bindings']['host_evidence'][name]);self.assertEqual((root/'claude-runs.sqlite3').read_bytes(),database)
+    finally:path.write_bytes(original)
+  self.assertEqual(review_run(root,'owner',run,'Done')['freshness']['prior_assurance'],'FRESH')
  def test_forged_import_not_host_proof(self):
   root,work,run=self.fixture();s=Store(root);s.append('host',run,'owner',{'origin':'agent-imported','status':'completed'});s.append('import',run,'owner',{'origin':'collector-subprocess','status':'completed','counts':{'PASS':6}})
   self.assertEqual(review_run(root,'owner',run,'Done')['counts']['PASS'],0)
@@ -65,9 +76,14 @@ class AdapterTests(unittest.TestCase):
  def test_artifact_changes_during_check_abstains(self):
   root,work,run=self.fixture()
   from muse_audit.claude_adapter.review import execute as real
-  def raced(*args,**kwargs):
-   result=real(*args,**kwargs);(work/'ui.mjs').write_text('changed');return result
-  with patch('muse_audit.claude_adapter.review.execute',side_effect=raced):self.assertEqual(review_run(root,'owner',run,'Done')['counts']['PASS'],0)
+  for target in (work/'ui.mjs',root/run/'build-stderr.txt'):
+   with self.subTest(path=target.name):
+    original=target.read_bytes()
+    def raced(*args,**kwargs):
+     result=real(*args,**kwargs);target.write_text('changed');return result
+    try:
+     with patch('muse_audit.claude_adapter.review.execute',side_effect=raced):self.assertEqual(review_run(root,'owner',run,'Done')['counts']['PASS'],0)
+    finally:target.write_bytes(original)
  def test_js_checker_identity_change_stales_and_requires_restart(self):
   root,work,run=self.fixture();record_receipt(root,'owner',run,'Done')
   old=sources()
@@ -113,6 +129,24 @@ class AdapterTests(unittest.TestCase):
   with patch('muse_audit.claude_adapter.collector.launch',side_effect=fake):
    with self.assertRaisesRegex(ValueError,'MCP receipt'):review_phase(root,'owner',run)
   self.assertEqual(Store(root).records(run,'owner','receipt'),[])
+ def test_explicit_second_review_retains_first_attempt_and_receipt(self):
+  from muse_audit.claude_adapter.collector import review_phase,TOOL
+  root,work,run=self.fixture()
+  def fake(argv,cwd,timeout):
+   session=argv[argv.index('--session-id')+1];receipt=review_run(root,'owner',run,'The app is done')
+   events=[{'type':'assistant','session_id':session,'message':{'content':[{'type':'tool_use','id':'review1','name':TOOL,'input':{'run_id':run,'claimed_outcome':'The app is done'}}]}},
+    {'type':'user','session_id':session,'message':{'content':[{'type':'tool_result','tool_use_id':'review1','content':json.dumps(receipt)}]}},
+    {'type':'result','subtype':'success','session_id':session,'is_error':False}]
+   return 0,'\n'.join(json.dumps(e) for e in events),'',False
+  with patch('muse_audit.claude_adapter.collector.launch',side_effect=fake):
+   first=review_phase(root,'owner',run)
+   originals={name:(root/run/name).read_bytes() for name in ('review-stream.jsonl','review-stderr.txt','review-mcp.json','completion-receipt.json')}
+   second=review_phase(root,'owner',run)
+  self.assertNotEqual(first['claude_review_observation']['session_id'],second['claude_review_observation']['session_id'])
+  self.assertEqual(second['freshness']['prior_assurance'],'FRESH');self.assertEqual(len(Store(root).records(run,'owner','receipt')),2)
+  for name,data in originals.items():self.assertEqual((root/run/name).read_bytes(),data)
+  attempt=Path(second['claude_review_observation']['evidence_directory'])
+  self.assertEqual(attempt.parent,root/run/'review-attempts');self.assertTrue((attempt/'completion-receipt.json').is_file())
  def test_actual_same_label_js_change_after_restart_stales_prior(self):
   from muse_audit.claude_adapter.identity import ROOT
   checkout=Path(self.tmp.name)/'checkout'

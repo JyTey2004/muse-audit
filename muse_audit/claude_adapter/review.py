@@ -56,11 +56,21 @@ def host_files_valid(root,run,h):
     and paths_valid(parsed,h['workspace']))
  except (KeyError,ValueError,OSError):return False
 
+def host_evidence_snapshot(root,run):
+ # Bind the evidence that is available now, not only its historical collector hash.
+ result={}
+ for name in ('build-stream.jsonl','build-stderr.txt','build-mcp.json'):
+  path=Path(root)/run/name
+  try:result[name]=sha(path.read_bytes()) if path.is_file() and not path.is_symlink() else None
+  except OSError:result[name]=None
+ return result
+
 def review_run(root,principal,run_id,claimed_outcome):
  if not isinstance(claimed_outcome,str) or len(claimed_outcome)>10000:raise ValueError('Bounded claim string required')
  s=Store(root,readonly=True);c=s.original(run_id,principal)
  approvals=s.records(run_id,principal,'approval')
  host=s.records(run_id,principal,'host')
+ host_before=host_evidence_snapshot(s.root,run_id)
  impl=implementation();before={};after={};problem=None
  try:before=snapshot(c['workspace'])
  except (ValueError,OSError) as e:problem=str(e)
@@ -83,9 +93,10 @@ def review_run(root,principal,run_id,claimed_outcome):
  try:after=snapshot(c['workspace'])
  except (ValueError,OSError) as e:problem=str(e)
  after_impl=implementation()
- stable=not problem and before==after and impl==after_impl
+ host_after=host_evidence_snapshot(s.root,run_id)
+ stable=not problem and before==after and impl==after_impl and host_before==host_after
  impl=after_impl
- if not stable:status='UNKNOWN';reason='Artifact changed during verification or unavailable';check={'status':'NOT_ACCEPTED'}
+ if not stable:status='UNKNOWN';reason='Artifact or execution evidence changed during verification or unavailable';check={'status':'NOT_ACCEPTED'}
  conditions=[]
  for req,text in c['contract'].get('requirements',{}).items():
   verdict='UNKNOWN';detail=reason;executed=False
@@ -99,7 +110,7 @@ def review_run(root,principal,run_id,claimed_outcome):
     verdict='PASS' if all(before.get(f) for f in FILES) else 'FAIL';detail='Required file presence only; browser behavior remains unknown';executed=True
   conditions.append({'id':req,'status':verdict,'explanation':detail,'checker_executed':executed})
  bindings={'run_id':run_id,'root':str(s.root),'principal':principal,'contract_hash':c['contract_hash'],
-  'approval_hash':digest(approvals),'host_hash':digest(host),'artifact_hashes':after,'implementation':impl}
+  'approval_hash':digest(approvals),'host_hash':digest(host),'host_evidence':host_after,'artifact_hashes':after,'implementation':impl}
  prior=s.records(run_id,principal,'receipt')
  freshness='NONE' if not prior else ('FRESH' if prior[-1]['bindings']==bindings else 'STALE')
  return {'schema':'stardive.claude-receipt.v1','run_id':run_id,'claim':{'origin':'agent-untrusted','text':claimed_outcome},

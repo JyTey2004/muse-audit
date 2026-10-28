@@ -122,7 +122,11 @@ def review_phase(root,principal,run,claim='The app is done',timeout=180):
  s=Store(root);c=s.original(run,principal)
  host=s.records(run,principal,'host')
  if not host or host[-1]['status']!='completed':raise ValueError('Finalize successful host evidence before review session')
- folder=s.root/run;session=str(uuid.uuid4())
+ run_folder=s.root/run;session=str(uuid.uuid4());folder=run_folder
+ if (run_folder/'review-session').exists():
+  # Explicit rechecks retain the first review and every subsequent attempt.
+  folder=run_folder/'review-attempts'/session
+  folder.mkdir(parents=True,exist_ok=False)
  config=folder/'review-mcp.json'
  config.write_text(json.dumps({'mcpServers':{'stardive':{'command':sys.executable,'args':['-m','muse_audit.claude_adapter.server','--store',str(s.root),'--principal',principal], 'env':{'PYTHONPATH':str(Path(__file__).resolve().parents[2])}}}}))
  cwd=folder/'review-session';cwd.mkdir(exist_ok=False)
@@ -149,7 +153,7 @@ def review_phase(root,principal,run,claim='The app is done',timeout=180):
  receipt=review_run(root,principal,run,claim)
  if receipt['bindings']!=observed['bindings'] or receipt['conditions']!=observed['conditions']:raise ValueError('State changed after MCP review; receipt withheld, review again explicitly')
  Store(root).append('receipt',run,principal,receipt)
- receipt['claude_review_observation']={'session_id':session,'tool_use_id':calls[0][0],'stream_hash':digest(out),'database_unchanged_during_review':unchanged,'advisory':True,'argv':argv,'config_hash':digest(config.read_text()),'implementation':implementation()}
+ receipt['claude_review_observation']={'session_id':session,'tool_use_id':calls[0][0],'stream_hash':digest(out),'database_unchanged_during_review':unchanged,'advisory':True,'evidence_directory':str(folder),'argv':argv,'config_hash':digest(config.read_text()),'implementation':implementation()}
  receipt['claude_review_observation_hash']=digest(receipt['claude_review_observation'])
  (folder/'completion-receipt.json').write_text(json.dumps(receipt,indent=2))
  return receipt

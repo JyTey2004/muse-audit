@@ -77,6 +77,10 @@ Outputs in `/tmp/stardive-claude-evidence-1/RUN_ID/`:
 
 The SQLite store persists approvals, original contract, host evidence and recorded receipts across processes. MCP review does not change its bytes. Moving/copying a store root is refused; make a fresh locally approved run instead. The principal is a launch-scoped local selector, **not authentication**.
 
+An explicit repeat of the `review` command starts another Claude session. It retains the first review files and receipt, and writes the new attempt under `RUN_ID/review-attempts/SESSION_ID/`. The returned `claude_review_observation.evidence_directory` identifies the attempt containing that completion receipt. There are no automatic model retries.
+
+Freshness also binds the currently available build stream, stderr and launch configuration. Withholding or changing those files makes prior evidence STALE and removes supported PASS results. Changes during verification cause the current check to abstain. Restoring the original files does not erase the retained failed or missing-evidence observations.
+
 To obtain another current check without Claude (no model call):
 
 ```bash
