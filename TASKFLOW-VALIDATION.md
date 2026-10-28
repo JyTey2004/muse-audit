@@ -56,8 +56,35 @@ receipt certifies the entire task. Retained cloud observations are unsigned.
 
 Automatic skill inclusion was turned off after repeated failed acceptance, while
 retaining the skill for explicitly requested pilot checks. A new native connector
-implementation is being prepared in the original cloud backend; its deployment,
-registration and ordinary-request acceptance are not yet established.
+implementation is now built in the original cloud backend and synced to the Mac;
+its deployment, registration and ordinary-request acceptance are not established.
+
+## Hosted connector implementation: tested, not deployed
+
+Cloud checkpoint `550df9842273081bd14b21248ffa70b44d6c8d9d` adds authenticated,
+owner-scoped REST intake, immutable artifact versions and receipt persistence,
+plus three genuinely read-only Streamable HTTP MCP tools. The user view is a
+compact result/checks table with short unresolved-item reasons and an inline
+receipt/date. It is limited to caller-declared synthetic pilot inputs.
+
+Mac verification passed 196 tests, the original 14 adversarial checks, 14 new
+independent HTTP acceptance checks, all protocol paths and three offline demos.
+The new independent checks first found partial rejected intake, ignored checker
+config fields and an incorrect word-count summary; those failures are retained
+outside Git. The corrected source passes all 14. Unknown config fields cannot
+silently PASS; live capabilities/OpenAPI publish exact config schemas.
+
+The source archive's 117 files were checked against the pinned cloud Git commit.
+Only reviewed deltas were applied, preserving the Mac documentation checkpoint
+and original planning edits. Raw generated review JSON stays outside the Mac Git
+checkout, as required by AGENTS.md.
+
+The original cloud executor exposes no general-purpose HTTPS publication,
+deployment identity or persistent Python-service control. Loopback HTTP is
+tested, but is not reachable by consumer Muse. The native app route accepts a
+brokered API-key bearer connection; no key, tunnel, hosting project, live grant
+or registered connector was created. The pending requirement is an actual host
+and secure connection, followed by fresh ordinary-request app acceptance.
 
 ## Native connection boundary
 

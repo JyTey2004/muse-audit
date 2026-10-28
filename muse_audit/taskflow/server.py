@@ -13,6 +13,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
 from . import checks as checkers
+from .config_schemas import schemas
 from .tasks import recheck_task, review_task
 
 
@@ -31,6 +32,8 @@ def create_server(store_root):
         return {
             "version": "taskflow-0.1",
             "supported": sorted(checkers.SUPPORTED_KINDS),
+            "config_schemas": schemas(),
+            "config_policy": "Exact supported fields only; extra or unsupported mappings remain UNKNOWN.",
             "unsupported": [
                 "semantic claims",
                 "web claims",

@@ -1,0 +1,12 @@
+{
+  "classification": "Private synthetic pilot; deployment unconfigured",
+  "transport": "ASGI Streamable HTTP /mcp; separate REST writes /api",
+  "workers": 1,
+  "filesystem": "Owner-scoped persistent volume; application process is trusted; no hostile-file sandbox claim",
+  "bind_default": "127.0.0.1:8765",
+  "external_ingress": "Requires separately reviewed HTTPS TLS termination, configured base origin and explicit launch flag",
+  "authentication": "Existing externally provisioned bearer credential SHA256 bindings; no credential creation, OAuth issuer or live key bundled",
+  "input_limits": {"artifact_bytes": 1000000, "source_each_bytes": 1000000, "source_total_bytes": 3000000, "request_body_bytes": 4100000, "sources": 10},
+  "retention": "Bounded per-owner task/version/receipt counts; no auto-deletion of historical evidence. A live retention/revocation/deletion operating policy remains a deployment decision.",
+  "completion": "Advisory listed comparisons only; no host completion gate or automatic Muse acceptance"
+}

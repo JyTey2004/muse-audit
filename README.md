@@ -5,6 +5,10 @@ per-request requirements and readable receipts. The reviewed runtime is installe
 in Muse's private cloud workspace and on the Mac. **Automatic ordinary-request
 delivery in Muse remains blocked**: five fresh-chat trials produced no new
 verification receipt. See [current taskflow acceptance](TASKFLOW-VALIDATION.md).
+The [native connector pilot](NATIVE-CONNECTOR-PILOT.md) now provides authenticated
+HTTP/MCP around the same backend, with 196 passing Mac tests and separate
+adversarial checks. It is not deployed: the existing cloud workspace has no
+supported HTTPS service-hosting control or configured deployment identity.
 
 Start with [BACKEND-QUICKSTART.md](BACKEND-QUICKSTART.md) for the persisted synthetic runner and new read-only MCP `review_run`. Existing native-file tools, fixtures and instructions below are preserved. The web Workcheck artifact remains separate and unchanged. No remote push or hosted service is implied.
 

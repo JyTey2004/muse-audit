@@ -10,6 +10,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from ..io import read_json
+from .config_schemas import config_problem
 
 SUPPORTED_KINDS = {
     "text.required_exact",
@@ -152,6 +153,9 @@ def _check_readable(path):
 
 
 def check_text(req, artifact_text):
+    problem = config_problem(req.get("kind"), req.get("config"))
+    if problem:
+        return _result(req, "UNKNOWN", problem)
     kind = req["kind"]
     if kind not in (
         "text.required_exact",
@@ -204,6 +208,9 @@ def check_text(req, artifact_text):
 
 
 def check_json(req, artifact_path):
+    problem = config_problem(req.get("kind"), req.get("config"))
+    if problem:
+        return _result(req, "UNKNOWN", problem)
     if req["kind"] != "json.field_exact":
         return _result(req, "UNKNOWN", f"No supported checker for {req['kind']!r}.")
     config = req.get("config", {})
@@ -256,6 +263,9 @@ def _read_csv_rows(path):
 
 
 def check_csv(req, artifact_path, task_dir, frozen):
+    problem = config_problem(req.get("kind"), req.get("config"))
+    if problem:
+        return _result(req, "UNKNOWN", problem)
     if req["kind"] not in ("csv.columns", "csv.rows_exact", "csv.total_cap"):
         return _result(req, "UNKNOWN", f"No supported checker for {req['kind']!r}.")
     config = req.get("config", {})

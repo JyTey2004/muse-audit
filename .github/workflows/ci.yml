@@ -74,6 +74,13 @@ jobs:
       - name: Run dynamic task flow and real MCP client checks
         run: python -m unittest discover -s tests_taskflow -v
 
+      - name: Run private connector HTTP/MCP and attached adversarial checks
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m unittest discover -s tests_connector -v
+          python tests_independent/independent_regressions.py --source . --output "$RUNNER_TEMP/stardive-independent.json"
+
       - name: Run real MCP subprocess protocol checks
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python tests/test_protocol.py
