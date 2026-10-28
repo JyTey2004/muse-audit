@@ -1,5 +1,11 @@
 # Current backend-first checkpoint
 
+New file tasks use the additive [taskflow engine](README-TASKFLOW.md), with frozen
+per-request requirements and readable receipts. The reviewed runtime is installed
+in Muse's private cloud workspace and on the Mac. **Automatic ordinary-request
+delivery in Muse remains blocked**: five fresh-chat trials produced no new
+verification receipt. See [current taskflow acceptance](TASKFLOW-VALIDATION.md).
+
 Start with [BACKEND-QUICKSTART.md](BACKEND-QUICKSTART.md) for the persisted synthetic runner and new read-only MCP `review_run`. Existing native-file tools, fixtures and instructions below are preserved. The web Workcheck artifact remains separate and unchanged. No remote push or hosted service is implied.
 
 Consumer Muse was tested on 28 October: it generated a real budget workbook, then ran the existing four-tool native-file MCP server on its own cloud computer. The returned protocol evidence and independent Mac replay agree: **7 PASS, 0 FAIL, 1 UNKNOWN**, with a **FRESH** recheck. See [CONSUMER-VALIDATION.md](CONSUMER-VALIDATION.md) for the bounded app flow and its limits. This is a task-local client; the Mac's Claude `review_run` store and a registered Muse connector remain unconnected.
@@ -9,7 +15,9 @@ Consumer Muse was tested on 28 October: it generated a real budget workbook, the
 # Muse audit companion — offline MCP prototype
 
 **A real MCP stdio server, a shared audit/repair kernel, and two unrelated synthetic native-file jobs.**
-No live Muse/Meta model call, deployment, connector submission or automatic local sync. No credentials are stored in this project.
+The original offline demos below need no live model call. Later manual consumer
+trials are documented above. No connector submission or automatic local sync is
+implied, and no credentials are stored in this project.
 The user's wider Muse audience is the product direction; this is a narrow testable tool, not universal verification.
 
 Start with [QUICKSTART-MAC.md](QUICKSTART-MAC.md). This standalone checkout imports the reviewed prototype for local user testing. Development remains cloud-first. The [GitHub repository](https://github.com/JyTey2004/muse-audit) is private. No license has been selected or granted by this checkpoint.

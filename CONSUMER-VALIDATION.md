@@ -1,5 +1,11 @@
 # Consumer Muse validation checklist
 
+The latest per-request extension and five failed automatic fresh-chat trials are
+recorded in [TASKFLOW-VALIDATION.md](TASKFLOW-VALIDATION.md). The backend supports
+new file tasks, but the saved-skill route has not delivered the requested
+automatic result/checks/receipt flow. The bounded historical budget trial below
+is separate evidence and does not clear that acceptance requirement.
+
 The B2C target is consumer Muse. Muse Code is a separate optional developer host. A bounded consumer-chat trial now runs the existing native-file MCP server on Muse's own cloud computer. This is a task-local Python client, not a registered connector or access to the Mac's local stdio server.
 
 ## Consumer app checkpoint — 28 October 2026
@@ -20,7 +26,7 @@ Evidence is retained outside Git: frozen inputs, original downloaded workbook, r
 
 One setup installs the trusted, bounded verifier in Muse's task workspace. The user then asks for the task in ordinary language. New tasks need a confirmed supported checklist; existing tasks can be rechecked with a short request. Technical identifiers, package installation, source pins and protocol details belong behind the result, not in repeated user prompts.
 
-The chat should lead with the useful outcome, for example: **“Budget checks pass: $780 total, $20 under cap.”** Then show **“Not verified: chair comfort.”** Attach the workbook and receipt/evidence. Keep prior results and make changed or missing bound inputs block acceptance. Review repairs separately before any new artifact is written. This remains a bounded budget workflow; arbitrary task understanding is not implemented.
+The chat should lead with the useful outcome, for example: **“Budget checks pass: $780 total, $20 under cap.”** Then show **“Not verified: chair comfort.”** Attach the workbook and a readable receipt; keep raw diagnostics outside the ordinary answer. Keep prior results and make changed or missing bound inputs block acceptance. Review repairs separately before any new artifact is written. This historical trial is a bounded budget workflow; it does not prove general task understanding.
 
 A local Muse skill, **Stardive Budget Check**, was saved with the frozen bindings and reviewed from its downloaded copy. Its generic connector fallback was removed, and new-budget confirmation asks for ordinary task requirements while setup owns technical mappings and pins. The short request **“Recheck my budget”** then loaded that skill, executed the unmodified MCP probe into a fresh output directory and delivered the concise result, workbook, fresh receipt and raw evidence in the same conversation. The second receipt has a later execution time and identical original bindings/checks. Both cloud receipts and the Mac replay were retained. Cross-chat discovery and a new-budget setup flow were not tested.
 

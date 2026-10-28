@@ -1,8 +1,15 @@
-# Taskflow extension (prototype, not yet the everyday skill)
+# General file tasks and readable receipts
 
-This package is a new source copy. The old source, the frozen budget,
-its receipts, and the existing daily-use skill are preserved elsewhere
-and are not changed by this package.
+The additive taskflow engine is installed in the private Muse cloud workspace
+and synced to the Mac. It prepares new tasks instead of reusing the historical
+budget. The old source, frozen budget, receipts and runtime paths are preserved.
+
+Automatic fresh-chat use is **not working**: five ordinary-request trials across
+CSV and Markdown returned no fresh verification receipt. Muse rejected the saved
+skill instructions through its prompt-injection safety check, including after a
+scoped rewrite. Installing a skill is not a native tool registration. The desired
+one-look presentation below remains the target; see
+[TASKFLOW-VALIDATION.md](TASKFLOW-VALIDATION.md) for observed acceptance status.
 
 ## What this adds
 
@@ -95,5 +102,6 @@ modify task inputs.
 Prepare a task, write the deliverable into the task artifacts folder,
 then review it. Repair, if needed, creates a new task copy under the
 original requirements; generate a new deliverable there and review it
-again. Do not install this as the everyday skill until you have
-reviewed this package.
+again. Do not claim automatic consumer integration from a direct CLI run or a
+guided chat test. Native connector registration and a fresh ordinary-request
+acceptance test remain necessary.
