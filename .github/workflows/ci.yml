@@ -71,6 +71,9 @@ jobs:
           python -m muse_audit.task_backend.demo --output "$RUNNER_TEMP/stardive-backend-demo"
           python tests_adapter/demo.py --output "$RUNNER_TEMP/stardive-adapter-demo"
 
+      - name: Run dynamic task flow and real MCP client checks
+        run: python -m unittest discover -s tests_taskflow -v
+
       - name: Run real MCP subprocess protocol checks
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python tests/test_protocol.py
@@ -92,8 +95,9 @@ jobs:
           and real MCP stdio subprocess behavior. Step outcomes above determine success.
           Expected artifact failures, UNKNOWN claims and STALE evidence remain visible.
 
-          **Consumer Muse integration: NOT RUN / UNTESTED (access gate).**
-          No Muse account, consumer connector, hosted endpoint or model call is tested.
+          **Consumer Muse: not exercised in CI.**
+          Account-level Muse trials are retained separately from these offline checks.
+          No Muse account, consumer connector, hosted endpoint or model call is tested by this job.
           Real Claude Code model-driven sessions run separately on an authorized Mac, not in CI.
           Adapter host streams in offline tests are labeled test doubles; Node checks and MCP calls actually execute.
           Native Office rendering and other Python/OS combinations are not covered.
