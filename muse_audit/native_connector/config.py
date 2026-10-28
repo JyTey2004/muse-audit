@@ -23,10 +23,14 @@ class Config:
     max_tasks_per_owner:int=100
     max_versions_per_task:int=20
     max_receipts_per_task:int=100
+    data_policy:str="synthetic_only"
+    max_stored_bytes_per_owner:int=256*1024*1024
     def __post_init__(self):
         root=Path(self.store)
         if root.is_symlink() or root.resolve()!=root:raise ValueError('Launch store must be an absolute non-symlink path')
         if not self.credentials:raise ValueError('Existing credential bindings required; no credential is minted')
+        if self.data_policy not in ('synthetic_only','selected_task_inputs'):raise ValueError('Unsupported launch data policy')
+        if type(self.max_stored_bytes_per_owner) is not int or not 1<=self.max_stored_bytes_per_owner<=1024**4:raise ValueError('Stored-byte quota must be a positive bounded integer')
         seen=set()
         for c in self.credentials:
             if not re.fullmatch(r'[a-zA-Z0-9_-]{1,64}',c.principal):raise ValueError('Invalid configured principal')
@@ -52,13 +56,13 @@ class Config:
         return self.store/hashlib.sha256(principal.encode()).hexdigest()
     def binding(self):
         return digest({'store':str(self.store),'credentials':[{'principal':c.principal,'token_sha256':c.token_sha256,'scopes':sorted(c.scopes)} for c in self.credentials],
-          'public_base_url':self.public_base_url,'origins':self.origins,'limits':[self.requests_per_minute,self.max_tasks_per_owner,self.max_versions_per_task,self.max_receipts_per_task]})
+          'public_base_url':self.public_base_url,'origins':self.origins,'data_policy':self.data_policy,'max_stored_bytes_per_owner':self.max_stored_bytes_per_owner,'limits':[self.requests_per_minute,self.max_tasks_per_owner,self.max_versions_per_task,self.max_receipts_per_task]})
 
 def load_config(path,store):
     path=Path(path)
     if path.is_symlink() or path.stat().st_mode&0o077:raise ValueError('Credential config must be a private regular file (chmod 600)')
     data=read_json(path)
-    if set(data)-{'credentials','public_base_url','origins','requests_per_minute','max_tasks_per_owner','max_versions_per_task','max_receipts_per_task'}:raise ValueError('Unknown configuration fields')
+    if set(data)-{'credentials','public_base_url','origins','requests_per_minute','max_tasks_per_owner','max_versions_per_task','max_receipts_per_task','data_policy','max_stored_bytes_per_owner'}:raise ValueError('Unknown configuration fields')
     creds=tuple(Credential(c['principal'],c['token_sha256'],frozenset(c['scopes'])) for c in data.pop('credentials'))
     if 'origins' in data:data['origins']=tuple(data['origins'])
     return Config(Path(store).resolve(),creds,**data)

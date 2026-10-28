@@ -1,11 +1,22 @@
 {
   "credentials": [
-    {"principal": "synthetic-pilot-owner", "token_sha256": "REPLACE_WITH_EXISTING_EXTERNALLY_PROVISIONED_CREDENTIAL_SHA256", "scopes": ["review", "intake", "artifact", "receipt"]}
+    {
+      "principal": "synthetic-pilot-owner",
+      "token_sha256": "REPLACE_WITH_EXISTING_EXTERNALLY_PROVISIONED_CREDENTIAL_SHA256",
+      "scopes": [
+        "review",
+        "intake",
+        "artifact",
+        "receipt"
+      ]
+    }
   ],
   "public_base_url": null,
   "origins": [],
   "requests_per_minute": 120,
   "max_tasks_per_owner": 100,
   "max_versions_per_task": 20,
-  "max_receipts_per_task": 100
+  "max_receipts_per_task": 100,
+  "data_policy": "synthetic_only",
+  "max_stored_bytes_per_owner": 268435456
 }

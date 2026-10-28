@@ -24,7 +24,8 @@ async def exercise(base,cfg):
     headers={'Authorization':'Bearer '+TOKEN_A};observations=[]
     async with httpx.AsyncClient(base_url=base,headers=headers,timeout=20,trust_env=False) as http:
         assert (await http.get('/openapi.json',headers={'Authorization':'Bearer wrong'})).status_code==401
-        task_response=await http.post('/api/tasks',json=body(),headers={'Idempotency-Key':'normal-picnic-1'});assert task_response.status_code==201,task_response.text
+        payload=body();payload['synthetic']=cfg.data_policy!='selected_task_inputs'
+        task_response=await http.post('/api/tasks',json=payload,headers={'Idempotency-Key':'normal-picnic-1'});assert task_response.status_code==201,task_response.text
         task=task_response.json();assert task['state']=='FROZEN';tid=task['task_id']
         upload=await http.put(f'/api/tasks/{tid}/versions/v1',content=b'item,amount\napples,12\nwater,8\n',headers={'Content-Type':'application/octet-stream','If-Match':task['frozen_sha256']});assert upload.status_code==201,upload.text
         before=pins(cfg.store)
@@ -37,10 +38,14 @@ async def exercise(base,cfg):
                 caps_response=await client.call_tool('taskflow_capabilities',{});caps=unpack(caps_response)
                 openapi=(await http.get('/openapi.json')).json()
                 assert caps['config_schemas']==openapi['x-checker-config-schemas']
+                assert caps['data_policy']==cfg.data_policy
+                assert caps['limits']['max_stored_bytes_per_owner']==cfg.max_stored_bytes_per_owner
+                assert openapi['x-pilot-limits']['data_policy']==cfg.data_policy
                 assert caps['config_schemas']['markdown.word_limit']['additionalProperties'] is False
                 observations.append({'method':'tools/call','params':{'name':'taskflow_capabilities','arguments':{}},'raw_result':caps_response.model_dump(mode='json')})
                 assert all('root' not in t.inputSchema.get('properties',{}) and 'principal' not in t.inputSchema.get('properties',{}) and 'command' not in t.inputSchema.get('properties',{}) for t in listed.tools)
                 response=await client.call_tool('taskflow_review',{'task_id':tid,'version_id':'v1'});first=unpack(response);observations.append({'method':'tools/call','params':{'name':'taskflow_review','arguments':{'task_id':tid,'version_id':'v1'}},'raw_result':response.model_dump(mode='json')})
+                assert first['synthetic'] is payload['synthetic'];assert first['active_data_policy']==cfg.data_policy
                 assert first['counts']['PASS']==3 and first['counts']['UNKNOWN']==1,first
                 recheck=unpack(await client.call_tool('taskflow_recheck',{'task_id':tid,'version_id':'v1','prior_receipt':first}));assert recheck['status']=='FRESH'
                 assert pins(cfg.store)==before,'Read-only MCP changed persistent bytes'
@@ -59,8 +64,10 @@ async def exercise(base,cfg):
         result=await http.get(saved['result_url']);assert result.content==b'item,amount\napples,12\nwater,8\n'
         assert 'receipt' not in saved
         details=(await http.get(saved['details_url'])).json();assert details['counts']['UNKNOWN']==1
+        assert details['synthetic'] is payload['synthetic']
+        if not payload['synthetic']:assert 'Selected current-task inputs' in saved['view'] and 'synthetic' not in saved['view'].lower()
         # Reproduce the reported intake failure through actual HTTP, not only the service API.
-        before_rejected=pins(cfg.store);duplicate=body();duplicate['sources']*=2
+        before_rejected=pins(cfg.store);duplicate=payload.copy();duplicate['sources']=payload['sources']*2
         rejected=await http.post('/api/tasks',json=duplicate,headers={'Idempotency-Key':'duplicate-sources'})
         assert rejected.status_code==400 and pins(cfg.store)==before_rejected
         bad_word=body();bad_word.update(artifact_name='note.md',artifact_kind='markdown')
@@ -80,15 +87,17 @@ async def exercise(base,cfg):
                 observations.append({'method':'tools/call','params':{'name':'taskflow_review','arguments':{'task_id':word_task['task_id'],'version_id':'v1'}},'raw_result':response.model_dump(mode='json')})
         word_save=await http.post(f"/api/tasks/{word_task['task_id']}/receipts",json={'version_id':'v1'});assert word_save.status_code==201
         word_saved=word_save.json();assert 'Word count 2; maximum 100' in word_saved['view'] and 'Total 2' not in word_saved['view']
-        return {'disclosure':'Real loopback HTTP/SDK MCP, synthetic credentials and data; no Muse/model/HTTPS ingress tested','protocol':init.protocolVersion,'read_only_store_bytes':'UNCHANGED','scoped_auth':'401 invalid token; cross-owner MCP refused','first':first['counts'],'changed_version':{'status':'STALE','FAIL':2},'saved':saved,'word_saved':word_saved,'review_fixes':{'duplicate_intake':'400; no persistent changes','unsupported_minimum':'400; no persistent changes','word_cap_summary':'Word count, not budget','capability_schemas':'Exact live/OpenAPI match'},'observations':observations}
+        return {'disclosure':'Real loopback HTTP/SDK MCP, synthetic credentials and data; no Muse/model/HTTPS ingress tested','protocol':init.protocolVersion,'read_only_store_bytes':'UNCHANGED','scoped_auth':'401 invalid token; cross-owner MCP refused','data_policy':cfg.data_policy,'synthetic_declaration':payload['synthetic'],'first':first['counts'],'changed_version':{'status':'STALE','FAIL':2},'saved':saved,'word_saved':word_saved,'review_fixes':{'duplicate_intake':'400; no persistent changes','unsupported_minimum':'400; no persistent changes','word_cap_summary':'Word count, not budget','capability_schemas':'Exact live/OpenAPI match'},'observations':observations}
 
 class HTTPProtocolTests(unittest.TestCase):
     def test_actual_tcp_http_initialize_list_review_recheck_and_receipt(self):
         result=run_protocol();self.assertEqual(result['protocol'],'2025-11-25')
+    def test_selected_input_mode_actual_http_mcp_classification_and_readonly(self):
+        result=run_protocol(selected_task_inputs=True);self.assertFalse(result['synthetic_declaration']);self.assertEqual(result['data_policy'],'selected_task_inputs')
 
-def run_protocol(output=None):
+def run_protocol(output=None,selected_task_inputs=False):
     with tempfile.TemporaryDirectory() as temp:
-        cfg=config(Path(temp)/'store');app=create_app(cfg)
+        cfg=config(Path(temp)/'store',data_policy='selected_task_inputs' if selected_task_inputs else 'synthetic_only');app=create_app(cfg)
         sock=socket.socket();sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
         server=uvicorn.Server(uvicorn.Config(app,host='127.0.0.1',port=port,log_level='error',access_log=False))
         thread=threading.Thread(target=server.run,kwargs={'sockets':[sock]},daemon=True);thread.start()
@@ -104,4 +113,4 @@ def run_protocol(output=None):
         finally:server.should_exit=True;thread.join(timeout=10);sock.close()
 if __name__=='__main__':
     import argparse
-    p=argparse.ArgumentParser();p.add_argument('--output');a=p.parse_args();r=run_protocol(a.output);print(json.dumps({k:v for k,v in r.items() if k not in ('observations','saved')},indent=2));print(r['saved']['view'])
+    p=argparse.ArgumentParser();p.add_argument('--output');p.add_argument('--selected-task-inputs',action='store_true');a=p.parse_args();r=run_protocol(a.output,a.selected_task_inputs);print(json.dumps({k:v for k,v in r.items() if k not in ('observations','saved')},indent=2));print(r['saved']['view'])

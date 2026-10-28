@@ -14,11 +14,12 @@ from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 from ..io import canonical
 from .service import Pilot,Conflict,strict_json,ID_RE,MAX_UPLOAD
+from .quota import QuotaExceeded
 
 MAX_BODY=4_100_000
 
 def _base_schema():
-    return {'openapi':'3.1.0','info':{'title':'Stardive private synthetic task pilot','version':'0.1'},
+    return {'openapi':'3.1.0','info':{'title':'Stardive private task assurance pilot','version':'0.1'},
       'security':[{'pilotBearer':[]}], 'components':{'securitySchemes':{'pilotBearer':{'type':'http','scheme':'bearer'}}},
       'paths':{
        '/api/tasks':{'post':{'operationId':'freezeTask','summary':'WRITE: Freeze original request, interpreted checklist and selected source bytes BEFORE generating a result','requestBody':{'required':True,'content':{'application/json':{'schema':{'type':'object','additionalProperties':False,'required':['request','requirements','sources','artifact_name','artifact_kind','synthetic'],'properties':{'request':{'type':'string','maxLength':10000},'requirements':{'type':'array','minItems':1,'maxItems':100,'items':{'type':'object'}},'sources':{'type':'array','minItems':1,'maxItems':10,'items':{'type':'object','required':['id','name','content_base64'],'properties':{'id':{'type':'string'},'name':{'type':'string'},'content_base64':{'type':'string'}}}},'artifact_name':{'type':'string'},'artifact_kind':{'enum':['text','markdown','json','csv','xlsx','docx']},'synthetic':{'const':True}}}}}},'parameters':[{'in':'header','name':'Idempotency-Key','required':True,'schema':{'type':'string'}}],'responses':{'201':{'description':'Frozen task descriptor and bound inputs'}}}},
@@ -31,9 +32,14 @@ def _base_schema():
         'normal_use':'Connector integration owns technical IDs internally: freeze -> generate -> upload new version -> review -> save fresh receipt -> return useful result, checked-value table, inline receipt. No automatic invocation is established by this specification.'}}
 
 
-def schema(public_base_url=None):
+def schema(public_base_url=None,data_policy="synthetic_only",max_stored_bytes_per_owner=256*1024*1024):
     from ..taskflow.config_schemas import schemas,requirement_schema
     result=_base_schema()
+    selected=data_policy=='selected_task_inputs'
+    props=result['paths']['/api/tasks']['post']['requestBody']['content']['application/json']['schema']['properties']
+    props['synthetic']={'type':'boolean','description':'Caller declaration only, not a data detector. False means selected current-task inputs.'}
+    if not selected:props['synthetic']['const']=True
+    result['x-pilot-limits'].update(synthetic_only=not selected,data_policy=data_policy,max_stored_bytes_per_owner=max_stored_bytes_per_owner,stored_bytes_basis='Actual regular-file bytes including retained copies and staged writes; single-worker owner lock. No prior-data deletion.')
     result['components']['schemas']={'TaskflowRequirement':requirement_schema()}
     result['paths']['/api/tasks']['post']['requestBody']['content']['application/json']['schema']['properties']['requirements']['items']={'$ref':'#/components/schemas/TaskflowRequirement'}
     result['x-checker-config-schemas']=schemas()
@@ -46,7 +52,7 @@ def schema(public_base_url=None):
 def create_app(config):
     pilot=Pilot(config);servers={};owner_apps={}
     for owner in {c.principal for c in config.credentials}:
-        server=FastMCP('Stardive private task assurance',instructions='Review declared synthetic task conditions only. No writes, generation, arbitrary commands, URL fetching or global certification.',
+        server=FastMCP('Stardive private task assurance',instructions='Review only the declared current-task conditions within the launch data policy. Input classification is caller-declared, not detected. No writes, generation, arbitrary commands, URL fetching or global certification.',
           stateless_http=True,json_response=True,log_level='WARNING',max_request_body_size=MAX_BODY,
           transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=True,allowed_hosts=['127.0.0.1:*','localhost:*']+([urlsplit(config.public_base_url).netloc] if config.public_base_url else []),allowed_origins=list(config.origins)))
         readonly=ToolAnnotations(readOnlyHint=True,destructiveHint=False,idempotentHint=True,openWorldHint=False)
@@ -56,7 +62,7 @@ def create_app(config):
             def taskflow_capabilities()->dict:
                 from ..taskflow.checks import SUPPORTED_KINDS
                 from ..taskflow.config_schemas import schemas
-                return {'supported':sorted(SUPPORTED_KINDS),'config_schemas':schemas(),'config_policy':'Exact fields; unsupported mappings abstain, never partial PASS','read_only':True,'synthetic_only':True,'unknown':['semantic truth','privacy','provider state','sent/delivered claims','checklist completeness','source authenticity'],'writes':'Intake, version upload and receipt persistence are separate authenticated HTTP writes.'}
+                return {'supported':sorted(SUPPORTED_KINDS),'config_schemas':schemas(),'config_policy':'Exact fields; unsupported mappings abstain, never partial PASS','read_only':True,'synthetic_only':config.data_policy=='synthetic_only','data_policy':config.data_policy,'classification_basis':'Caller synthetic boolean is a declaration, not a detector; false remains selected current-task input','limits':{'max_stored_bytes_per_owner':config.max_stored_bytes_per_owner,'accounting':'All retained owner files, copies, metadata and projected staged writes; quota rejections never evict prior data'},'unknown':['semantic truth','privacy','provider state','sent/delivered claims','checklist completeness','source authenticity'],'writes':'Intake, version upload and receipt persistence are separate authenticated HTTP writes.'}
             @s.tool(annotations=readonly)
             def taskflow_review(task_id:str,version_id:str)->dict:
                 """Execute comparisons on current owner-authorized version bytes, without saving state."""
@@ -74,7 +80,7 @@ def create_app(config):
             if required not in cred.scopes:return JSONResponse({'error':'Scope not granted'},status_code=403)
             try:
                 if method=='POST' and request.headers.get('content-type','').split(';')[0]!='application/json':return JSONResponse({'error':'application/json required'},status_code=415)
-                if path=='/openapi.json':return JSONResponse(schema(config.public_base_url))
+                if path=='/openapi.json':return JSONResponse(schema(config.public_base_url,config.data_policy,config.max_stored_bytes_per_owner))
                 if path=='/api/tasks':
                     body=strict_json(await request.body());result=await asyncio.to_thread(pilot.create,principal,body,request.headers.get('idempotency-key'));return JSONResponse(result,status_code=201)
                 task_id=request.path_params['task_id']
@@ -97,7 +103,7 @@ def create_app(config):
                     artifact=load_frozen(task)['artifact']['name'];p=safe_path(task,'pilot-receipts/'+ref+'/'+artifact)
                     return Response(p.read_bytes(),media_type='application/octet-stream',headers={'Content-Disposition':f'attachment; filename="{artifact}"'})
                 return JSONResponse(receipt)
-            except Conflict as e:return JSONResponse({'error':str(e)},status_code=409)
+            except (Conflict,QuotaExceeded) as e:return JSONResponse({'error':str(e)},status_code=409)
             except (ValueError,KeyError,TypeError,OSError,UnicodeError):return JSONResponse({'error':'Input refused, unavailable, or outside authorized scope'},status_code=400)
         routes=[Route('/openapi.json',endpoint,methods=['GET']),Route('/api/tasks',endpoint,methods=['POST']),Route('/api/tasks/{task_id}',endpoint,methods=['GET']),Route('/api/tasks/{task_id}/versions/{version_id}',endpoint,methods=['PUT']),Route('/api/tasks/{task_id}/receipts',endpoint,methods=['POST']),Route('/api/tasks/{task_id}/receipts/{receipt_ref}/result',endpoint,methods=['GET']),Route('/api/tasks/{task_id}/receipts/{receipt_ref}',endpoint,methods=['GET']),Mount('/',app=mcp)]
         owner_apps[owner]=Starlette(routes=routes)
