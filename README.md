@@ -1,3 +1,5 @@
+Dedicated controlled entry point: [Muse task workflow](connectors/muse_controlled/README.md).
+
 Current completion policy: [receipt-required backend completion](docs/MUSE-COMPLETION-GATE.md). Canonical file delivery requires a current passing receipt and explicit server completion; Muse chat text has no host veto.
 
 # Current cloud backend and native Muse checkpoint — 29 October 2026
