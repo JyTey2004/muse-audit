@@ -1,6 +1,12 @@
 # Stardive private native connector pilot — 28 October 2026
 
-Latest reviewed cloud checkpoint: `550df9842273081bd14b21248ffa70b44d6c8d9d`.
+**29 October deployment and acceptance update:** the same cloud backend is now
+hosted on Stardive's existing infrastructure, registered in Muse, and tested with
+two fresh ordinary requests and independent receipt replay. Read
+[current native acceptance](docs/MUSE-NATIVE-ACCEPTANCE.md) first. The remaining
+sections preserve the earlier source-build observations and their limitations.
+
+Historical reviewed cloud checkpoint: `550df9842273081bd14b21248ffa70b44d6c8d9d`.
 The Mac independently passed **196 tests, both sets of 14 adversarial checks,
 all four protocol paths and three offline demos**. See
 [review fixes](docs/NATIVE-REVIEW-FIXES.md) for atomic intake, exact config schemas
@@ -8,13 +14,13 @@ and the corrected nonbudget summary. The server is a synthetic private pilot;
 no native connector or live HTTPS service is registered. Hosting is a capability
 gap in the current Work executor, not merely an unset URL.
 
-## Current state and preserved history
+## Historical source state and preserved history
 
 This extends the **same Muse Audit Python backend**. Reviewed Mac archive SHA256 `073e7daa8c6f61ac452b2c8dd14603224a5c112319badded3fafbe0c510f453f`, reported runtime `3ab1929163c5875277cb1464f9e0bb74af36423e`, was verified against all 91 manifest entries and reconciled on cloud branch `cloud-native-pilot-3ab1929`, commit `30c72a6`. No unrelated Git histories were merged. `docs/NATIVE-SOURCE-RECONCILIATION.json` records exact incoming pins. The cumulative source preserves a247171/e082a02 hardening, original fixtures, existing stdio tools and taskflow checkers. Native changes live in `muse_audit/native_connector/` and do not replace old entrypoints. The attached separately authored regression script is retained unchanged under `tests_independent/`.
 
-**Consumer automatic acceptance is still FAIL / not achieved.** Five ordinary Muse trials ignored or rejected saved skills, including the concise variant; automatic inclusion was turned off. Guided task-local MCP use for CSV (3 PASS/1 UNKNOWN) and Markdown (6 PASS/1 UNKNOWN) was observed and independently replayed, both UNRESOLVED. Neither guided use nor this generated endpoint/schema/config demonstrates automatic native acceptance. The supplied ZIP has runtime/docs, not the ignored Mac evidence directories: those remain on Mac and are not claimed transferred, deleted or rewritten. Existing ignored cloud evidence and the separate owner-private Workcheck Site are untouched.
+**At this historical source-only checkpoint, consumer automatic acceptance was FAIL / not achieved.** Five ordinary Muse trials ignored or rejected saved skills, including the concise variant; automatic inclusion was turned off. Guided task-local MCP use for CSV (3 PASS/1 UNKNOWN) and Markdown (6 PASS/1 UNKNOWN) was observed and independently replayed, both UNRESOLVED. Neither guided use nor this generated endpoint/schema/config demonstrates automatic native acceptance. The supplied ZIP has runtime/docs, not the ignored Mac evidence directories: those remain on Mac and are not claimed transferred, deleted or rewritten. Existing ignored cloud evidence and the separate owner-private Workcheck Site are untouched.
 
-## Actual environment and blockers
+## Original Work executor capability boundary — 28 October
 
 Observed cloud Work executor: Linux x86_64, Python 3.12.14, Node 24.22.1, existing MCP SDK 1.29.0 / Starlette 1.6.0 / Uvicorn 0.52.1 / HTTPX 0.28.1. No `environment_status` tool or cloud-environment runtime skill is exposed in the current complete skill/tool inventory. No deployment CLI, Docker/Podman engine, inbound HTTPS binding, deployed endpoint, backend credential binding or usable hosting identity was identified. Environment variable names were inspected without printing values. Network-secret placeholders or unrelated connected-app credentials are not assumed to be an inbound service identity. No other cloud project or Site is substituted.
 

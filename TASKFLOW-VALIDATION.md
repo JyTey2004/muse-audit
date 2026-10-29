@@ -1,5 +1,22 @@
 # General task workflow: observed validation
 
+## Native consumer acceptance — 29 October 2026
+
+The same cloud backend is now deployed behind authenticated HTTPS and connected
+to consumer Muse. After a preserved native-discovery failure, the runtime catalog
+description and supported preferred-connector setting were configured for artifact
+creation and verification. Two new ordinary requests then automatically completed
+the full workflow, without technical commands or tool names in their prompts.
+
+The Markdown task had six selected checks and the CSV task had three. Independent
+Mac replay matched every executed check, the original frozen prompts and sources,
+and the exact files downloaded from Muse. Both saved receipts rechecked FRESH.
+The source and client guard checks, actual app execution, and limits of the
+preference are recorded in [native acceptance](docs/MUSE-NATIVE-ACCEPTANCE.md).
+
+The following sections preserve the earlier skill and guided-client phases;
+their failed trials are not reclassified as successful native runs.
+
 ## Implemented and installed
 
 Runtime checkpoint `3ab1929163c5875277cb1464f9e0bb74af36423e` adds a per-request
@@ -56,8 +73,9 @@ receipt certifies the entire task. Retained cloud observations are unsigned.
 
 Automatic skill inclusion was turned off after repeated failed acceptance, while
 retaining the skill for explicitly requested pilot checks. A new native connector
-implementation is now built in the original cloud backend and synced to the Mac;
-its deployment, registration and ordinary-request acceptance are not established.
+implementation was then built in the original cloud backend and synced to the Mac.
+Deployment, registration and ordinary-request acceptance were unestablished at
+that checkpoint; the dated native acceptance section above records the later work.
 
 ## Hosted connector implementation: tested, not deployed
 

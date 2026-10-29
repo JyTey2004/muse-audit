@@ -1,18 +1,27 @@
-# Current backend-first checkpoint
+# Current cloud backend and native Muse checkpoint — 29 October 2026
 
 New file tasks use the additive [taskflow engine](README-TASKFLOW.md), with frozen
-per-request requirements and readable receipts. The reviewed runtime is installed
-in Muse's private cloud workspace and on the Mac. **Automatic ordinary-request
-delivery in Muse remains blocked**: five fresh-chat trials produced no new
-verification receipt. See [current taskflow acceptance](TASKFLOW-VALIDATION.md).
-The [native connector pilot](NATIVE-CONNECTOR-PILOT.md) now provides authenticated
-HTTP/MCP around the same backend, with 196 passing Mac tests and separate
-adversarial checks. It is not deployed: the existing cloud workspace has no
-supported HTTPS service-hosting control or configured deployment identity.
+per-request requirements and readable receipts. The same reviewed cloud backend
+is deployed at `https://mcp.stardive.xyz`, synced to the Mac, and connected to Muse
+through its Secure Credentials Store. The cloud implementation checkpoint is
+`fb3fe1da1f8701d1ec5c71082be0ccd207f56628`; the deployed Mac release is `bcc3ec9`.
 
-Start with [BACKEND-QUICKSTART.md](BACKEND-QUICKSTART.md) for the persisted synthetic runner and new read-only MCP `review_run`. Existing native-file tools, fixtures and instructions below are preserved. The web Workcheck artifact remains separate and unchanged. No remote push or hosted service is implied.
+Two fresh ordinary requests automatically ran freeze, generation, upload,
+read-only MCP review, receipt persistence and snapshot delivery. Independent Mac
+replay matched the delivered Markdown and CSV bytes, all six and three selected
+checks respectively, and both receipts rechecked **FRESH**. The first native
+discovery failure and the five earlier skill failures remain preserved.
+See [current native acceptance](docs/MUSE-NATIVE-ACCEPTANCE.md) and
+[phase-by-phase history](TASKFLOW-VALIDATION.md).
 
-Consumer Muse was tested on 28 October: it generated a real budget workbook, then ran the existing four-tool native-file MCP server on its own cloud computer. The returned protocol evidence and independent Mac replay agree: **7 PASS, 0 FAIL, 1 UNKNOWN**, with a **FRESH** recheck. See [CONSUMER-VALIDATION.md](CONSUMER-VALIDATION.md) for the bounded app flow and its limits. This is a task-local client; the Mac's Claude `review_run` store and a registered Muse connector remain unconnected.
+Muse is configured to prefer this connector for artifact creation and verification.
+That preference is not a platform-enforced completion gate: a missing receipt
+means the task is unverified. Meaning, checklist completeness, source authenticity,
+privacy and external provider state remain outside the deterministic checks.
+
+Start with [BACKEND-QUICKSTART.md](BACKEND-QUICKSTART.md) for the persisted synthetic runner and read-only MCP `review_run`. Existing native-file tools, fixtures and instructions below are preserved. The web Workcheck artifact remains separate and unchanged. No remote push or public connector submission was performed.
+
+Earlier, on 28 October, consumer Muse generated a budget workbook and ran the four-tool native-file MCP server on its cloud computer: **7 PASS, 0 FAIL, 1 UNKNOWN**, with a **FRESH** recheck. [CONSUMER-VALIDATION.md](CONSUMER-VALIDATION.md) preserves that bounded task-local trial. It is distinct from the later registered HTTPS connector and from the Mac's Claude `review_run` store.
 
 ---
 
