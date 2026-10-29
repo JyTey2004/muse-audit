@@ -68,7 +68,7 @@ class PolicyQuotaTests(unittest.TestCase):
         app,c=self.client();task=self.fill(app);saved=app.pilot.persist('owner-a',task['task_id'],'v1');before=self.pin();used=stored_bytes(self.cfg.owner_root('owner-a'))
         limited,c2=self.client(replace(self.cfg,max_stored_bytes_per_owner=used+1))
         r=c2.post('/api/tasks/'+task['task_id']+'/receipts',json={'version_id':'v1'},headers=self.h)
-        self.assertEqual(r.status_code,409);self.assertEqual(before,self.pin());self.assertEqual(c.get(saved['result_url'],headers=self.h).status_code,200)
+        self.assertEqual(r.status_code,409);self.assertEqual(before,self.pin());self.assertEqual(c.get(saved['result_url'],headers=self.h).status_code,409);self.assertEqual(c.get(saved['details_url'],headers=self.h).status_code,200)
     def test_actual_usage_includes_retained_extra_file_not_just_known_versions(self):
         app,c=self.client();root=self.cfg.owner_root('owner-a');p=root/'retained-old-evidence.bin';p.write_bytes(b'x'*10000)
         self.assertEqual(stored_bytes(root),10000);limited=Pilot(replace(self.cfg,max_stored_bytes_per_owner=10001))

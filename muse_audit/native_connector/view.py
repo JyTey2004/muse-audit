@@ -33,5 +33,5 @@ def compact_view(receipt,reference,artifact_name,requirements=()):
         lines.append(f"| {cell(check.get('description') or check.get('requirement_id'))} | {cell(check.get('observed'))} | {cell(check.get('expected'))} | {check['status']} | {short_reason(check)} |")
     lines.append('| Checklist completeness and source authenticity | Not independently established | Human review | UNKNOWN | Meaning and real-world accuracy may need user review |')
     classification='Declared synthetic data' if receipt.get('synthetic') is True else 'Selected current-task inputs' if receipt.get('synthetic') is False else 'Input classification unverified'
-    lines.extend(['',f"Completion receipt: {reference} · {receipt.get('generated_at','')} · {classification}; caller-declared, not detected. Interpreted checklist only; source authenticity, semantics and privacy unverified."])
+    lines.extend(['',f"Verification receipt (completion pending): {reference} · {receipt.get('generated_at','')} · {classification}; caller-declared, not detected. Interpreted checklist only; source authenticity, semantics and privacy unverified."])
     return '\n'.join(lines)

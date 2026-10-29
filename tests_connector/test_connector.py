@@ -66,7 +66,7 @@ class ConnectorTests(unittest.TestCase):
     def test_receipt_persistence_separate_write_and_simple_view(self):
         task=self.fixture();r=self.client.post('/api/tasks/'+task['task_id']+'/receipts',json={'version_id':'v1'},headers=self.h);self.assertEqual(r.status_code,201,r.text);result=r.json()
         self.assertIn('| Check |',result['view']);self.assertIn('20',result['view']);self.assertIn('65',result['view']);self.assertIn('UNKNOWN',result['view']);self.assertNotIn('sha256',result['view'])
-        self.assertEqual(self.client.get(result['result_url'],headers=self.h).content,b'item,amount\napples,12\nwater,8\n')
+        self.assertEqual(self.client.get(result['result_url'],headers=self.h).status_code,409) # UNKNOWN checklist cannot be delivered as complete
         self.assertEqual(self.client.get(result['details_url'],headers={'Authorization':'Bearer '+TOKEN_B}).status_code,400)
     def test_current_source_change_and_missing_evidence_block(self):
         task=self.fixture();prior=self.app.pilot.review('owner-a',task['task_id'],'v1')

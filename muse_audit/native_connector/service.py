@@ -69,7 +69,7 @@ class Pilot:
         if type(body['synthetic']) is not bool:raise ValueError('synthetic must be an explicit boolean caller declaration')
         if self.config.data_policy=='synthetic_only' and not body['synthetic']:raise ValueError('Launch policy permits synthetic task data only')
         plain_name(body['artifact_name'])
-        if body['artifact_name'] in {'version.json','pilot-intake.json','view.txt','evaluation'}:raise ValueError('Artifact name collides with retained evidence')
+        if body['artifact_name'] in {'version.json','pilot-intake.json','view.txt','evaluation','receipt.json','manifest.json'}:raise ValueError('Artifact name collides with retained evidence')
         if not isinstance(idempotency_key,str) or not ID_RE.fullmatch(idempotency_key):raise ValueError('Bounded Idempotency-Key required')
         if not isinstance(body['sources'],list) or not 1<=len(body['sources'])<=10:raise ValueError('One through ten selected sources required')
         _validate_requirements(body['requirements'])
@@ -147,11 +147,15 @@ class Pilot:
                 if existing!=data:raise Conflict('Version ID cannot overwrite earlier bytes')
                 return {'task_id':task_id,'version_id':version_id,'sha256':sha(data),'replayed':True}
             if versions.exists() and len(list(versions.iterdir()))>=self.config.max_versions_per_task:raise Conflict('Version limit reached')
-            record={'version_id':version_id,'sha256':sha(data),'bytes':len(data),'observed_at':now(),'origin':'caller-uploaded artifact, not a tool-success assertion'}
+            from .completion import upload_head
+            head=upload_head(task,allow_legacy=True)
+            sequence=(head.get('sequence',0) if head else 0)+1
+            record={'version_id':version_id,'server_sequence':sequence,'sha256':sha(data),'bytes':len(data),'observed_at':now(),'origin':'caller-uploaded artifact, not a tool-success assertion'}
+            event={'schema':1,'sequence':sequence,'version_id':version_id,'version_record':sha((canonical(record)+'\n').encode()),'frozen_sha256':expected_frozen}
             frozen_files={name:read_within(task,name) for name in ('frozen.json','frozen.sha256')}
             selected={source['name']:read_within(task,'sources/'+source['name']) for source in frozen['sources']}
             if any(len(value)>MAX_UPLOAD for value in selected.values()):raise ValueError('Frozen source too large')
-            projected=2*len(data)+sum(map(len,frozen_files.values()))+sum(map(len,selected.values()))+len((canonical(record)+'\n').encode())
+            projected=2*len(data)+sum(map(len,frozen_files.values()))+sum(map(len,selected.values()))+len((canonical(record)+'\n').encode())+len((canonical(event)+'\n').encode())
             enforce(self.root(principal),self.config.max_stored_bytes_per_owner,projected,'version')
             # Stage the complete version before atomic publication; partial uploads never look finalized.
             with tempfile.TemporaryDirectory(prefix='version-staging-',dir=task) as temporary:
@@ -165,6 +169,13 @@ class Pilot:
                 (inner/'artifacts'/frozen['artifact']['name']).write_bytes(data)
                 enforce(self.root(principal),self.config.max_stored_bytes_per_owner,0,'version-staged')
                 versions.mkdir(exist_ok=True)
+                # Publish an append-only intent before the version. A crash/missing
+                # newest version blocks completion rather than reviving an old one.
+                events=task/'upload-events'
+                if events.is_symlink():raise ValueError('Upload event parent symlink refused')
+                events.mkdir(exist_ok=True)
+                enforce(self.root(principal),self.config.max_stored_bytes_per_owner,len((canonical(event)+'\n').encode()),'upload-event')
+                self.write_once(events/f'{sequence:020}.json',event)
                 staged.rename(target)
             return {'task_id':task_id,'version_id':version_id,'sha256':sha(data),'replayed':False}
     def version(self,principal,task_id,version_id):
@@ -238,6 +249,7 @@ class Pilot:
             view=compact_view(receipt,ref,frozen['artifact']['name'],frozen['requirements'])
             payloads['receipt.json']=(canonical(receipt)+'\n').encode()
             payloads['view.txt']=view.encode()
+            payloads['manifest.json']=(canonical({'schema':1,'receipt_ref':ref,'files':{name:sha(value) for name,value in payloads.items()}})+'\n').encode()
             enforce(self.root(principal),self.config.max_stored_bytes_per_owner,sum(map(len,payloads.values())),'receipt')
             with tempfile.TemporaryDirectory(prefix='.receipt-staging-',dir=task) as temporary:
                 staged=Path(temporary)
@@ -246,4 +258,13 @@ class Pilot:
                 enforce(self.root(principal),self.config.max_stored_bytes_per_owner,0,'receipt-staged')
                 outputs.mkdir(exist_ok=True)
                 staged.rename(folder)
-            return {'receipt_ref':ref,'view':view,'receipt':receipt,'result_url':f'/api/tasks/{task_id}/receipts/{ref}/result','details_url':f'/api/tasks/{task_id}/receipts/{ref}'}
+            return {'receipt_ref':ref,'state':'AUDIT_SAVED','completion_required':True,'view':view,'receipt':receipt,'result_url':f'/api/tasks/{task_id}/receipts/{ref}/result','details_url':f'/api/tasks/{task_id}/receipts/{ref}'}
+    def complete(self,principal,task_id,receipt_ref):
+        from .completion import complete
+        return complete(self,principal,task_id,receipt_ref)
+    def completion(self,principal,task_id):
+        from .completion import status
+        return status(self,principal,task_id)
+    def release(self,principal,task_id,receipt_ref):
+        from .completion import release
+        return release(self,principal,task_id,receipt_ref)

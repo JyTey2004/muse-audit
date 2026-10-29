@@ -1,3 +1,5 @@
+Current completion policy: [receipt-required backend completion](docs/MUSE-COMPLETION-GATE.md). Canonical file delivery requires a current passing receipt and explicit server completion; Muse chat text has no host veto.
+
 # Current cloud backend and native Muse checkpoint — 29 October 2026
 
 New file tasks use the additive [taskflow engine](README-TASKFLOW.md), with frozen

@@ -61,7 +61,7 @@ async def exercise(base,cfg):
                 async with ClientSession(r,w) as client:
                     await client.initialize();assert (await client.call_tool('taskflow_review',{'task_id':tid,'version_id':'v1'})).isError
         saved_response=await http.post(f'/api/tasks/{tid}/receipts',json={'version_id':'v1'});assert saved_response.status_code==201,saved_response.text;saved=saved_response.json()
-        result=await http.get(saved['result_url']);assert result.content==b'item,amount\napples,12\nwater,8\n'
+        result=await http.get(saved['result_url']);assert result.status_code==409 # UNKNOWN and superseded version cannot release
         assert 'receipt' not in saved
         details=(await http.get(saved['details_url'])).json();assert details['counts']['UNKNOWN']==1
         assert details['synthetic'] is payload['synthetic']
@@ -87,6 +87,9 @@ async def exercise(base,cfg):
                 observations.append({'method':'tools/call','params':{'name':'taskflow_review','arguments':{'task_id':word_task['task_id'],'version_id':'v1'}},'raw_result':response.model_dump(mode='json')})
         word_save=await http.post(f"/api/tasks/{word_task['task_id']}/receipts",json={'version_id':'v1'});assert word_save.status_code==201
         word_saved=word_save.json();assert 'Word count 2; maximum 100' in word_saved['view'] and 'Total 2' not in word_saved['view']
+        assert (await http.get(word_saved['result_url'])).status_code==409
+        completed=await http.post(f"/api/tasks/{word_task['task_id']}/complete",json={'receipt_ref':word_saved['receipt_ref']});assert completed.status_code==200,completed.text
+        assert (await http.get(word_saved['result_url'])).content==b'Hi there.'
         return {'disclosure':'Real loopback HTTP/SDK MCP, synthetic credentials and data; no Muse/model/HTTPS ingress tested','protocol':init.protocolVersion,'read_only_store_bytes':'UNCHANGED','scoped_auth':'401 invalid token; cross-owner MCP refused','data_policy':cfg.data_policy,'synthetic_declaration':payload['synthetic'],'first':first['counts'],'changed_version':{'status':'STALE','FAIL':2},'saved':saved,'word_saved':word_saved,'review_fixes':{'duplicate_intake':'400; no persistent changes','unsupported_minimum':'400; no persistent changes','word_cap_summary':'Word count, not budget','capability_schemas':'Exact live/OpenAPI match'},'observations':observations}
 
 class HTTPProtocolTests(unittest.TestCase):
