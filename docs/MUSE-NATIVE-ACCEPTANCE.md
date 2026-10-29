@@ -1,3 +1,5 @@
+Historical advisory-flow acceptance, before the mandatory backend completion gate. See [current gate and observed tests](MUSE-COMPLETION-GATE.md). Prior receipts remain history and are not promoted as current completion.
+
 # Private native Muse acceptance — 29 October 2026
 
 The existing cloud implementation at `fb3fe1da1f8701d1ec5c71082be0ccd207f56628`

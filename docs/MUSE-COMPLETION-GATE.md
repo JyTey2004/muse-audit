@@ -38,3 +38,39 @@ pass locally. Existing advisory-result tests now expect denial until explicit
 completion; their failed/unknown evidence remains accessible as history. Actual
 consumer Muse skipped/failed and ordinary-request tests are recorded separately
 from these local tests; global host enforcement is not inferred from backend409.
+
+## Observed consumer acceptance, 29 October 2026
+
+The change is live at the existing private HTTPS origin, release `de6d568`.
+All121 staged source files matched the Mac archive; actual ARM host validation
+passed41 taskflow and67 connector tests. The231 local unit tests, standalone
+protocol checks, fresh demos and dependency check passed. Independent public
+HTTPS probes verified missing/failed/unknown receipts, forged verdict rejection,
+save-only delivery denial, valid idempotent completion and newer-upload staleness.
+
+| Actual fresh Muse test | Server and visible app outcome |
+| --- | --- |
+| Skipped review and receipt persistence | HTTP409 BLOCKED; no audit receipt or completion record; no completed file attached |
+| Notebook8 plus pen5, fixed cap10 | 2 PASS,1 FAIL, total13; completion409 and canonical result409; no repair or completed file |
+| Ordinary Cedar handover request | 6 PASS; server COMPLETED; 20 words under40; result, breakdown and receipt together in the app |
+
+Cedar receipt: `receipt-cc60ec53f94f4bfab4a52776f0401048`, task
+`task-39d44c75812f41b9`. Independent checks confirmed the exact original prompt,
+selected request source pins, FRESH server recheck, identical134-byte app download
+and receipt snapshot, and matching independent Mac checker results. No prior Vega
+facts occur in the transferred source. The agent did read earlier local examples;
+this is not proof of local workspace privacy or isolation.
+
+Failed audit: `receipt-333b143abda445df80fc6299234938d5`, task
+`task-81ff092559cb43f2`; the failed receipt remains valid historical failed evidence,
+not successful completion. Skipped task `task-878508dd4a3f4fb7` has neither audit
+nor completion record. Both negative tests paraphrased the request at intake;
+the targeted fixed costs/cap and deliberate missing receipt were preserved and
+independently checked. They do not prove exact original-prompt capture.
+
+The separate bypass control refused to create/deliver the unverified file by
+following connector/skill instructions. This is observed agent compliance, not
+host interception. Available Muse interfaces still provide no completion veto;
+the absolute claim that every Muse chat is technically unable to say done is
+not established. Earlier advisory acceptance/failures remain history. All106
+pre-upgrade retained files were verified unchanged after the new consumer tests.
