@@ -48,3 +48,51 @@ Validation: `python -m unittest discover -s tests_controlled -v` exercises the
 controller against the actual local ASGI backend with synthetic credentials.
 `node tests_controlled/test_workflow.mjs` executes the exact workflow JavaScript
 with manufactured stage outputs. Actual native runs are separate acceptance.
+
+## Live entry point and acceptance
+
+Use [Stardive Controlled Tasks](https://muse.ai/thread/8e01a9ee-9db9-4391-8a1f-d04b96b87cd6)
+and submit a normal text, Markdown, JSON or CSV request. The dedicated chat was
+selected directly after the cross-chat setup-history message failed Muse's safety
+check. No safety, credential or permission setting was changed.
+
+Actual native v3 runs on29 October were independently rechecked on30 October2026:
+
+| Request | Observed outcome |
+| --- | --- |
+| Willow rollout JSON | 4 PASS, server COMPLETED, exact96-byte result, checks and receipt together in Muse |
+| Notebook8 plus pen5 under unchanged cap10 | 2 PASS/1 FAIL, backend409, blocked workflow, delivery stage never launched, no final file |
+| Deliberately omitted verification in the fixed test snapshot | Actual missing-receipt409, no saved receipt/completion record, no final file |
+| Original Willow note with only-these-facts condition | 6 PASS/1 UNKNOWN, backend409, no delivery; unsupported semantic condition preserved |
+
+Normal receipt `receipt-18e84ac0c50346fcaa96cf5558c57e95` covers
+`task-12662238a49f4e6b`. The actual UI download, native publisher file, server
+snapshot and independently replayed checker result match. The enabled field is
+JSON boolean false, not a string or numeric substitute. Selected source pins and
+the exact original requests match for all four acceptance cases. Live MCP rechecks
+of stored audits are FRESH; that label on failed/unknown audits means intact
+historical evidence, not passing completion. Skipped verification created no audit.
+All106 pre-upgrade retained files were checked unchanged, and the existing backend
+release `de6d568` remains active without an upgrade or new credential.
+
+The native installed helper matches the reviewed v3 manifest. The successful and
+failed run scripts match production apart from runtime trailing-newline storage;
+the omission snapshot has only the documented two-line test difference. Native
+filesystem checks confirm that failed and omitted-verification runs have no final
+publisher output. The successful native run is
+`workflow-run-8b60c6cbf9c3459d885a1cb844c8e64d`; the failed-check run is
+`workflow-run-40de4a2db5a24e79964fd1131190d7f3`; omission is
+`workflow-run-437966148f8749258aecd7a6e9316ab1`.
+
+The21 publisher/controller tests and23 asynchronous JavaScript tests pass, alongside
+231 existing Python regressions and the required original protocol checks.
+Initial v1 native runs failed integration after freeze because agent results were
+not awaited; both were stopped and preserved, with no delivered file. They are
+not counted as valid skipped-verification acceptance. A native minimal probe
+confirmed the corrected await/result behavior before the v3 acceptance runs.
+
+A supported file format does not make every requested condition automatically
+checkable. Unsupported conditions remain UNKNOWN and block this workflow; the
+original note was not weakened or repaired. The separate supported JSON request
+is the positive acceptance case. Native routing remains scoped to this chosen
+chat, and the source/private-context trust boundary above still applies.
