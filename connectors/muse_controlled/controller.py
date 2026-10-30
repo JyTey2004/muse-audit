@@ -8,6 +8,7 @@ is not a sandbox against another process that can rewrite that trusted source.
 """
 import argparse
 import base64
+from datetime import datetime, timezone
 import hashlib
 import importlib.util
 import json
@@ -116,11 +117,12 @@ class Backend:
             raise Blocked('Backend access unavailable; delivery remains blocked') from None
 
 class Controller:
-    def __init__(self,workdir,backend,output_root,mcp_review=None):
+    def __init__(self,workdir,backend,output_root,mcp_review=None,card_root=None):
         self.workdir=safe_components(workdir);self.backend=backend
         self.mcp_review=mcp_review if mcp_review is not None else McpReview()
         self.private=safe_components(self.workdir/'.stardive-controlled')
         self.output_root=safe_components(output_root)
+        self.card_root=safe_components(card_root or self.private/'cards')
     def load(self):
         value=strict(read_file(self.private,'context.json',MAX_BODY))
         if value.get('schema')!=1:raise Blocked('Private workflow context unavailable')
@@ -131,6 +133,10 @@ class Controller:
         with tempfile.NamedTemporaryFile(mode='w',dir=self.private,delete=False,encoding='utf-8') as f:
             f.write(canonical(value)+'\n');temp=Path(f.name)
         os.replace(temp,self.private/'context.json')
+    def record(self,ctx,action,status='DONE',at=None):
+        actions=ctx.setdefault('actions',[])
+        if not any(a['id']==action for a in actions):
+            actions.append({'id':action,'status':status,'at':at or datetime.now(timezone.utc).isoformat()})
     def describe(self,ctx,state=None,reason=None,receipt=None):
         checks=[]
         if receipt:
@@ -139,7 +145,41 @@ class Controller:
         return {'state':state or ctx['state'],'task_id':ctx['task_id'],'version_id':ctx['version_id'],
             'request_sha256':ctx['request_sha256'],'artifact_name':ctx['artifact_name'],'artifact_sha256':ctx.get('artifact_sha256'),
             'receipt_ref':ctx.get('receipt_ref'),'receipt_date':receipt.get('generated_at') if receipt else None,
-            'checks':checks,'reason':reason,'mcp_check':ctx.get('mcp_check'),'scope':SCOPE}
+            'checks':checks,'reason':reason,'mcp_check':ctx.get('mcp_check'),'actions':ctx.get('actions',[]),
+            'audit_record_matched':bool(receipt and ctx.get('mcp_check',{}).get('digest')==review_digest(receipt)),'scope':SCOPE}
+    def presentation(self,report):
+        # HTML stays private; only the native widget token is a chat deliverable.
+        path=safe_components(Path(__file__).parent/'assurance_card.py')
+        spec=importlib.util.spec_from_file_location('stardive_assurance_card',path)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        self.private.mkdir(mode=0o700,exist_ok=True)
+        target=safe_components(self.private/'assurance-card.html')
+        with tempfile.NamedTemporaryFile(mode='w',dir=self.private,delete=False,encoding='utf-8') as f:
+            f.write(module.render_card(report));temp=Path(f.name)
+        os.replace(temp,target)
+        payload=module.native_payloads(report);body=(canonical(payload)+'\n').encode()
+        native=safe_components(self.private/'assurance-card.json')
+        with tempfile.NamedTemporaryFile(mode='wb',dir=self.private,delete=False) as f:
+            f.write(body);temp=Path(f.name)
+        os.replace(temp,native)
+        registry=None
+        if re.fullmatch(r'task-[a-f0-9]{16}',payload['task_id']):
+            self.card_root.parent.mkdir(parents=True,mode=0o700,exist_ok=True)
+            self.card_root.mkdir(mode=0o700,exist_ok=True)
+            registry=safe_components(self.card_root/(payload['task_id']+'.json'))
+            if registry.exists():
+                if read_file(self.card_root,registry.name,MAX_BODY)!=body:raise Blocked('Historical action-card records cannot be overwritten')
+            else:
+                fd=os.open(registry,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+                with os.fdopen(fd,'wb') as f:f.write(body)
+        return {**report,'assurance_card':{'path':str(target),'native_payload_path':str(native),'registry_path':str(registry) if registry else None,'detail_request':payload['detail_request'],'display_text':'Stardive assurance','fallback_text':module.fallback(report)}}
+    def card_details(self,task_id):
+        if not isinstance(task_id,str) or not re.fullmatch(r'task-[a-f0-9]{16}',task_id):raise Blocked('A recorded task identifier is required')
+        record=strict(read_file(self.card_root,task_id+'.json',MAX_BODY))
+        details=record.get('details')
+        if record.get('task_id')!=task_id or not isinstance(details,dict) or not isinstance(details.get('items'),list) or not 1<=len(details['items'])<=20 or details.get('present_now') is not False:
+            raise Blocked('The recorded action card is unavailable')
+        return {'state':'CARD_DETAILS','task_id':task_id,'detail_request':record['detail_request'],'widget_args':details,'snapshot':True}
     def capabilities(self):
         spec=self.backend('GET','/openapi.json')
         catalog=spec.get('x-checker-config-schemas')
@@ -173,14 +213,14 @@ class Controller:
         if task.get('frozen',{}).get('request')!=request or not ID.fullmatch(task.get('task_id','')):raise Blocked('Backend did not bind the original request')
         ctx={'schema':1,'state':'FROZEN','task_id':task['task_id'],'frozen_sha256':task['frozen_sha256'],
             'request_sha256':sha(request.encode()),'artifact_name':name,'artifact_kind':kind,'version_id':'v-'+uuid.uuid4().hex,'receipt_ref':None}
-        self.save(ctx);return self.describe(ctx)
+        self.record(ctx,'request_saved');self.save(ctx);return self.describe(ctx)
     def upload(self,draft_name):
         ctx=self.load()
         if ctx['state']!='FROZEN':raise Blocked('Upload requires this run’s frozen contract')
         data=read_file(self.workdir,draft_name,MAX_ARTIFACT)
         response=self.backend('PUT',f"/api/tasks/{ctx['task_id']}/versions/{ctx['version_id']}",data,{'If-Match':ctx['frozen_sha256']},raw=True)
         if response.get('sha256')!=sha(data):raise Blocked('Upload binding did not match draft bytes')
-        ctx.update(state='UPLOADED',artifact_sha256=sha(data));self.save(ctx);return self.describe(ctx)
+        ctx.update(state='UPLOADED',artifact_sha256=sha(data));self.record(ctx,'file_prepared');self.save(ctx);return self.describe(ctx)
     def require_binding(self,ctx,r):
         if not isinstance(r,dict):raise Blocked('Required structured check evidence is missing')
         binding=r.get('pilot_binding',{})
@@ -208,17 +248,19 @@ class Controller:
             return self.describe(ctx,'BLOCKED',str(exc))
         try:self.require_pass(review);status='PASS'
         except Blocked:status='BLOCKED'
-        ctx['mcp_check']={'tool':'taskflow_review','state':status,'checked_at':review.get('generated_at'),'digest':review_digest(review)};self.save(ctx)
+        ctx['mcp_check']={'tool':'taskflow_review','state':status,'checked_at':review.get('generated_at'),'digest':review_digest(review)}
+        self.record(ctx,'requirements_checked',status,review.get('generated_at'));self.save(ctx)
         response=self.backend('POST',f"/api/tasks/{ctx['task_id']}/receipts",{'version_id':ctx['version_id']})
         ctx['receipt_ref']=response.get('receipt_ref');self.save(ctx)
         receipt=self.receipt(ctx)
+        self.record(ctx,'receipt_saved',at=receipt.get('generated_at'));self.save(ctx)
         try:
             if review_digest(receipt)!=ctx['mcp_check']['digest']:raise Blocked('Evidence changed between the MCP check and saved receipt')
             complete=self.backend('POST',f"/api/tasks/{ctx['task_id']}/complete",{'receipt_ref':ctx['receipt_ref']})
             self.require_pass(review)
             self.require_pass(receipt)
             if complete.get('state')!='COMPLETED' or complete.get('receipt_ref')!=ctx['receipt_ref']:raise Blocked('Backend did not approve receipt-bound completion')
-            ctx['state']='VERIFIED';self.save(ctx);return self.describe(ctx,'VERIFIED',receipt=receipt)
+            ctx['state']='VERIFIED';self.record(ctx,'delivery_approved');self.save(ctx);return self.describe(ctx,'VERIFIED',receipt=receipt)
         except Blocked as exc:
             ctx['state']='BLOCKED';self.save(ctx)
             return {**self.describe(ctx,'BLOCKED',str(exc),receipt), 'backend_http':getattr(exc,'status',None)}
@@ -250,26 +292,33 @@ class Controller:
             fd=os.open(target,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
             with os.fdopen(fd,'wb') as f:f.write(data)
             if read_file(folder,ctx['artifact_name'],MAX_ARTIFACT)!=data:raise Blocked('Published bytes changed during delivery')
-        ctx['state']='DELIVERED';self.save(ctx)
+        ctx['state']='DELIVERED';self.record(ctx,'result_delivered');self.save(ctx)
         return {**self.describe(ctx,'COMPLETED',receipt=receipt),'result':{'name':ctx['artifact_name'],'path':str(target),'bytes':len(data),'sha256':sha(data)},'completion_date':current.get('completed_at')}
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='operation',required=True)
     p=sub.add_parser('prepare');p.add_argument('--request-file',required=True);p.add_argument('--plan-file',required=True)
     p=sub.add_parser('upload');p.add_argument('--draft-file',required=True)
+    p=sub.add_parser('card-details');p.add_argument('--task-id',required=True)
     sub.add_parser('verify');sub.add_parser('deliver');sub.add_parser('finalize');sub.add_parser('capabilities')
-    args=parser.parse_args();controller=Controller(Path.cwd(),Backend(),Path.home()/'workspace/your_files/stardive-controlled')
+    args=parser.parse_args();controller=Controller(Path.cwd(),Backend(),Path.home()/'workspace/your_files/stardive-controlled',card_root=Path.home()/'workspace/.stardive-assurance/cards')
     try:
         if args.operation=='prepare':result=controller.prepare(read_file(Path.cwd(),args.request_file,40000).decode(),strict(read_file(Path.cwd(),args.plan_file,MAX_BODY)))
         elif args.operation=='capabilities':result=controller.capabilities()
         elif args.operation=='upload':result=controller.upload(args.draft_file)
         elif args.operation=='verify':result=controller.verify()
         elif args.operation=='finalize':result=controller.finalize()
+        elif args.operation=='card-details':result=controller.card_details(args.task_id)
         else:result=controller.deliver()
     except Blocked as exc:
         result={'state':'BLOCKED','reason':str(exc)[:400],'result':None}
     except (OSError,ValueError,KeyError,TypeError,UnicodeError):
         result={'state':'BLOCKED','reason':'Required workflow evidence is missing, invalid or unavailable; no result delivered','result':None}
+    if args.operation in ('finalize','deliver'):
+        try:result=controller.presentation(result)
+        except (OSError,ValueError,KeyError,TypeError,ImportError):
+            # A display failure cannot mint a receipt or authorize a blocked file.
+            result={**result,'assurance_card':None}
     print(json.dumps(result,ensure_ascii=False))
     return 0 if result.get('state')!='BLOCKED' else 2
 if __name__=='__main__':raise SystemExit(main())

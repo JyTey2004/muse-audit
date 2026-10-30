@@ -142,4 +142,48 @@ class ControlledTests(unittest.TestCase):
     def test_mcp_error_ambiguous_and_conflicting_evidence_rejected(self):
         for result in ({'isError':True,'content':[{'type':'text','text':'{}'}]}, {'content':[]}, {'content':[{'type':'text','text':'{}'}]*2}, {'content':[{'type':'text','text':'{}'}],'structuredContent':{'different':True}}, {'content':[{'type':'text','text':'{"decision":"PASS","decision":"FAIL"}'}]}):
             with self.assertRaises(mod.Blocked):mod.McpReview.unpack(result)
+    def test_action_summary_records_only_completed_controller_steps(self):
+        self.prepare();self.assertEqual([a['id'] for a in self.c.load()['actions']],['request_saved'])
+        self.upload();self.assertEqual([a['id'] for a in self.c.load()['actions']],['request_saved','file_prepared'])
+        self.c.verify();self.assertNotIn('result_delivered',[a['id'] for a in self.c.load()['actions']])
+        r=self.c.deliver();self.assertEqual([a['id'] for a in r['actions']],['request_saved','file_prepared','requirements_checked','receipt_saved','delivery_approved','result_delivered'])
+        self.c.deliver();self.assertEqual(len(self.c.load()['actions']),6)
+    def test_passing_card_is_private_and_uses_matched_audit(self):
+        self.ready();report=self.c.finalize();r=self.c.presentation(report);p=Path(r['assurance_card']['path'])
+        self.assertEqual(p.parent,self.c.private);self.assertEqual(p.name,'assurance-card.html');html=p.read_text()
+        self.assertIn('1 check passed',html);self.assertIn('Audited by Stardive',html);self.assertIn('Delivered the verified file',html);self.assertNotIn('sandbox:',html)
+        self.assertEqual(r['receipt_ref'],report['receipt_ref']);self.assertEqual(r['result'],report['result'])
+    def test_failed_card_shows_blocked_and_never_claims_delivery(self):
+        self.ready(plan(1));report=self.c.finalize();self.assertTrue(report['audit_record_matched']);r=self.c.presentation(report);html=Path(r['assurance_card']['path']).read_text()
+        self.assertIn('Delivery blocked',html);self.assertIn('Audited by Stardive',html);self.assertIn('Delivery withheld',html);self.assertNotIn('Delivered the verified file',html);self.assertFalse(self.delivered_files())
+    def test_skipped_card_cannot_claim_a_completed_audit(self):
+        self.ready();report=self.c.deliver();r=self.c.presentation(report);html=Path(r['assurance_card']['path']).read_text()
+        self.assertIn('Audit not completed',html);self.assertNotIn('Audited by Stardive',html);self.assertNotIn('Checked 0 requirements',html);self.assertFalse(self.delivered_files())
+    def test_card_escapes_task_text_without_executable_injection(self):
+        self.ready();report=self.c.finalize();report['checks'][0]['check']='<script>evil()</script>';report['artifact_name']='"><img src=x onerror=evil()>'
+        html=Path(self.c.presentation(report)['assurance_card']['path']).read_text()
+        self.assertIn('&lt;script&gt;evil()&lt;/script&gt;',html);self.assertNotIn('<script>evil()',html);self.assertNotIn('<img src=x',html);self.assertEqual(html.count('<script>'),1)
+    def test_native_card_binds_the_details_request_to_an_immutable_task_record(self):
+        self.ready();report=self.c.finalize();card=self.c.presentation(report)['assurance_card'];p=Path(card['registry_path']);data=json.loads(p.read_text())
+        self.assertEqual(data['task_id'],report['task_id']);self.assertEqual(data['receipt_ref'],report['receipt_ref']);self.assertEqual(p.name,report['task_id']+'.json')
+        self.assertEqual(data['summary']['items'][0]['data']['text'],data['detail_request']);self.assertIn(report['task_id'][5:],data['detail_request']);self.assertEqual(data['details']['items'][-1]['title'],'Audited by Stardive')
+        self.assertEqual([i['title'] for i in data['details']['items'][:4]],['Saved your request','Prepared note.txt','Checked 1 requirement','Delivered the verified file'])
+        self.assertFalse(data['summary']['present_now']);self.assertTrue(all(i['type']=='generic' for i in data['details']['items']))
+        self.assertEqual(p.stat().st_mode&0o777,0o600);self.assertEqual(p.parent.stat().st_mode&0o777,0o700)
+    def test_native_card_snapshot_never_overwrites_an_earlier_record(self):
+        self.ready();report=self.c.finalize();card=self.c.presentation(report)['assurance_card'];p=Path(card['registry_path']);before=p.read_bytes()
+        changed=copy.deepcopy(report);changed['artifact_name']='another.txt'
+        with self.assertRaisesRegex(mod.Blocked,'cannot be overwritten'):self.c.presentation(changed)
+        self.assertEqual(p.read_bytes(),before)
+    def test_native_skipped_card_records_no_delivery_or_audit_claim(self):
+        self.ready();report=self.c.deliver();card=self.c.presentation(report)['assurance_card'];data=json.loads(Path(card['registry_path']).read_text())
+        self.assertEqual(data['summary']['items'][0]['title'],'Delivery blocked');self.assertEqual(data['details']['items'][-1]['title'],'Audit not completed · Stardive')
+        self.assertNotIn('Delivered the verified file',[i['title'] for i in data['details']['items']]);self.assertIsNone(data['receipt_ref']);self.assertFalse(self.delivered_files())
+    def test_card_details_is_read_only_and_never_verifies_or_delivers(self):
+        self.ready();report=self.c.finalize();card=self.c.presentation(report)['assurance_card'];calls=list(self.calls);before=Path(card['registry_path']).read_bytes()
+        details=self.c.card_details(report['task_id']);self.assertEqual(details['state'],'CARD_DETAILS');self.assertTrue(details['snapshot']);self.assertEqual(details['widget_args']['title'],'What Muse did')
+        self.assertEqual(self.calls,calls);self.assertEqual(Path(card['registry_path']).read_bytes(),before)
+        for invalid in ('../context','task-'+('f'*16)):
+            with self.assertRaises(mod.Blocked):self.c.card_details(invalid)
+        self.assertEqual(self.calls,calls)
 if __name__=='__main__':unittest.main()

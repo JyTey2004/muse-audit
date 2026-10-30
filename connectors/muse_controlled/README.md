@@ -136,3 +136,62 @@ original protocol tests passed. The tests cover missing MCP evidence, mismatched
 MCP/receipt evidence, failed/unknown checks, stale delivery and absent receipts.
 The existing backend release and connection are unchanged. The same dedicated-chat
 routing and trusted-source/private-context boundaries above still apply.
+
+## Action card
+
+The final check child reads the exact private `assurance-card.json` generated
+by the controller and passes its `summary` object unchanged to the native
+`widget.create_list_widget`. It returns the real embed token; the parent displays
+it beside the normal guarded file attachment. Clicking "See what Muse did"
+opens a simple action list in chat, with "Audited by Stardive" below it.
+
+The controller records actual completed transitions, never model-written action
+narrative. It saves an immutable, task-bound display snapshot under
+`~/workspace/.stardive-assurance/cards/task-<id>.json` with private permissions.
+The exact card-generated request carries that task ID. The configured parent
+handles it separately from file requests: run only `controller.py card-details
+--task-id task-<id>`, require the returned `detail_request` to match the clicked
+message, then pass `widget_args` unchanged to `widget.create_list_widget` and
+embed the real token. This command reads only that snapshot. It never contacts
+the backend, checks again, creates a receipt or delivers a file.
+
+The details list shows the recorded request/preparation/check/delivery actions,
+check status and a short date/receipt footer. Audit branding requires a stored
+audit matching the actual MCP review. Failed checks retain the audit but show
+Delivery blocked and no delivered-file action; skipped verification says Audit
+not completed. This is a dated snapshot of selected requirements and key task
+actions, not certification of every hidden agent or tool action. Older card
+records are never overwritten. Widget creation cannot approve delivery, and an
+unavailable widget has the original honest text fallback.
+
+Native HTML widgets failed to preview in this consumer client on30 October2026,
+including a bare static probe, both file/inline variants and a parent-created
+card. Those failures are retained. The built-in native list card rendered and
+its tap successfully opened recorded actions. It uses a read-only follow-up in
+chat rather than an in-place HTML expansion. The HTML renderer remains a private
+source/snapshot artifact; it is not the active presentation route.
+
+The same dedicated-chat routing and trusted-source/private-context boundaries
+still apply; no global host interception or continuously live card is claimed.
+
+
+Native v6 acceptance on30 October2026: a fresh ordinary Cedar JSON request
+returned its normal file and a working native assurance card. Tapping the card
+opened four recorded actions, the four selected check descriptions/status and
+Audited by Stardive underneath. The actual UI download, native publisher output
+and current backend snapshot matched exactly (108 bytes). The normal task was
+`task-137c059478654e5b`, receipt `receipt-d840a915c89c42c0ad39ba4270704950`.
+The failed six-word/three-word-cap request stayed BLOCKED with1 PASS/1 FAIL,
+no final output and backend result409. Skipped verification also stayed BLOCKED,
+with no MCP record/receipt/final output and result409. Both blocked card taps
+opened their correct recorded action views; skipped verification displayed
+Audit not completed instead of audit branding.
+
+Installed helpers and all three run snapshots matched the reviewed v6 source,
+with only the documented omission-test differences and newline normalization.
+The private card records matched the original task/version/request/artifact/
+receipt/actions context and had0600 permissions. Native MCP evidence digests
+matched the stored audits, which independently rechecked FRESH. The36 controller,
+29 asynchronous workflow checks (also executed in Muse), required54 core and
+original protocol tests passed. No backend, credential, scope or permission
+change was required. HTML preview failures remain part of the acceptance record.
