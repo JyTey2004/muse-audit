@@ -5,30 +5,38 @@ Markdown, JSON and CSV artifacts through the existing private HTTPS backend.
 It creates no new credential, permission, endpoint, scheduled job or cloud service.
 The three native MCP tools stay read-only.
 
-`workflow.js` awaits each native Promise-returning agent stage. The actual native
-runtime probe confirmed that top-level await returns the schema-validated object.
-Runtime suspension/provider errors are left to the native runtime rather than
-being swallowed by a generic catch. It runs bounded stages: plan/freeze, private draft/upload,
-verification, then delivery. The guarded `controller.py` performs backend writes
-through the existing host-scoped Muse SCS broker. The request is frozen before
-artifact generation; no stage can pass a caller verdict to the service. The
-verifier saves the actual server-recomputed audit and attempts completion.
-A failed/unknown/stale/missing receipt ends the workflow with the native blocked
-control result, with check values/reasons and an audit reference when available.
+`workflow.js` awaits two native Promise-returning stages: "Working on your
+request", then "Checking before delivery". The first stage selects the checklist,
+freezes the exact request before generating any result, creates a private draft
+and uploads it. The second runs `controller.py finalize`: an actual read-only
+MCP `taskflow_review` through the installed fixed-host client, followed by separate
+REST receipt persistence, mandatory completion and guarded release. The MCP
+result and saved receipt must match on every field except their check timestamp.
+Missing MCP evidence, failed/unknown checks or changed bindings block delivery.
+The final view is the requested file, compact checked values, pass count and a
+shortened real receipt reference/date; the full reference remains in run state.
+
+The existing SCS credential, backend and three read-only MCP tools are reused.
+No verdict is accepted from the agent. Runtime suspension/provider errors remain
+native errors; they are never swallowed by a generic catch. Production accepts
+only the exact normal request, with no skip/override options. The internal
+`verify` and `deliver` commands remain separately testable; `finalize` invokes
+delivery only after real verification succeeds, without another agent handoff.
 
 Delivery is a separate code path, never a copy of the worker's local draft. It
 requires this run's persisted receipt, checks its request/version/artifact bindings,
 revalidates current server completion, downloads through the existing gated result
 URL and checks the exact bytes before exclusive creation of the final output.
-No implicit verification, repair, cap change or draft fallback happens at delivery.
+No implicit verification, repair, cap change or draft fallback happens in the
+`deliver` command. `finalize` explicitly checks first, then calls it.
 A new upload or changed evidence blocks later retrieval. Earlier files/history
 are preserved, and changed final files are never overwritten.
 
 In Muse install controller.py beside the existing connector helpers, then create
 the saved workflow from workflow.js. Use a dedicated chat to route a plain user
 request to `workflow.launch(name='stardive-controlled-task',args={request:exact})`.
-Render only the curated final return: useful file, observed/required check table,
-receipt/date and one scope sentence. Do not attach scratch/plan/receipt JSON.
+Render only the curated final return: useful file, compact checked-value summary
+(or a small observed/required table when useful), receipt/date and one scope sentence. Do not attach scratch/plan/receipt JSON.
 
 The saved workflow and publisher source plus private run context are trusted.
 Native child agents retain normal workspace access: this is not an OS sandbox
@@ -84,7 +92,7 @@ publisher output. The successful native run is
 `workflow-run-40de4a2db5a24e79964fd1131190d7f3`; omission is
 `workflow-run-437966148f8749258aecd7a6e9316ab1`.
 
-The21 publisher/controller tests and23 asynchronous JavaScript tests pass, alongside
+Historical v3 validation had21 publisher/controller tests and23 asynchronous JavaScript tests, alongside
 231 existing Python regressions and the required original protocol checks.
 Initial v1 native runs failed integration after freeze because agent results were
 not awaited; both were stopped and preserved, with no delivered file. They are
@@ -96,3 +104,35 @@ checkable. Unsupported conditions remain UNKNOWN and block this workflow; the
 original note was not weakened or repaired. The separate supported JSON request
 is the positive acceptance case. Native routing remains scoped to this chosen
 chat, and the source/private-context trust boundary above still applies.
+
+## Final-check UX acceptance (30 October 2026)
+
+The installed v4 workflow now has two user-visible phases, work and check, with
+one bounded child per phase. A fresh ordinary request for `release-settings.json`
+returned the file, a one-line four-check summary and a shortened dated receipt
+in the same chat view. No commands, protocol steps or evidence-package attachment
+were shown in that task view. Native activity records freeze before draft upload,
+then the `finalize` command in the check child; the installed source performs the
+actual read-only MCP call before receipt persistence and guarded publication.
+
+| Fresh native case | Result |
+| --- | --- |
+| Maple release settings JSON | 4 PASS; COMPLETED; actual UI download equals the109-byte backend snapshot |
+| Exact six-word text with at-most-three-word limit | 1 PASS/1 FAIL; BLOCKED; no completed file; backend result409 |
+| Fixed omission snapshot | No MCP review or receipt; missing-receipt409; BLOCKED; no final file |
+
+The positive run is `workflow-run-6cb3c11f8b9c444ab09c173242d367c4`, receipt
+`receipt-e024e6806884456b97210d917d485146`. Failed verification is
+`workflow-run-eb930d9a308e4c2090766839269cc97c`, receipt
+`receipt-0180cc3e316f4c3f8aa84daf89095ece`. Omission is
+`workflow-run-5bb22f871f10487fba7474096f44ddf0`, with no receipt.
+Independent HTTPS reads confirmed exact original requests, current completion
+states and download behavior; real read-only MCP rechecks of the two saved audits
+were FRESH. A FRESH failed audit still blocks completion.
+
+Current validation:27 controller tests against the actual local ASGI/MCP backend,
+26 asynchronous JavaScript checks (also run in Muse), required54 core tests and
+original protocol tests passed. The tests cover missing MCP evidence, mismatched
+MCP/receipt evidence, failed/unknown checks, stale delivery and absent receipts.
+The existing backend release and connection are unchanged. The same dedicated-chat
+routing and trusted-source/private-context boundaries above still apply.

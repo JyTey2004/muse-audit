@@ -23,14 +23,19 @@ class ControlledTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.base=Path(self.temp.name).resolve()
         self.work=self.base/'private';self.work.mkdir();self.output=self.base/'your_files'
         self.app=create_app(config(self.base/'store',data_policy='selected_task_inputs',requests_per_minute=10000))
-        self.client=TestClient(self.app,base_url='http://localhost');self.client.__enter__();self.addCleanup(self.client.__exit__,None,None,None);self.calls=[]
+        self.client=TestClient(self.app,base_url='http://localhost:8765');self.client.__enter__();self.addCleanup(self.client.__exit__,None,None,None);self.calls=[]
         def backend(method,path,value=None,headers=None,raw=False):
             self.calls.append((method,path,value))
             h={'Authorization':'Bearer '+TOKEN_A,**(headers or {})}
             r=self.client.request(method,path,content=value if raw else None,json=None if raw else value,headers={**h,**({'Content-Type':'application/octet-stream'} if raw else {})})
             if r.status_code>=400:raise mod.BackendError(r.status_code,r.json().get('error','refused'))
             return r.content if path.endswith('/result') else r.json()
-        self.backend=backend;self.c=mod.Controller(self.work,backend,self.output)
+        def review(tid,vid):
+            self.calls.append(('MCP','taskflow_review',{'task_id':tid,'version_id':vid}))
+            r=self.client.post('/mcp',json={'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'taskflow_review','arguments':{'task_id':tid,'version_id':vid}}},headers={'Authorization':'Bearer '+TOKEN_A,'Content-Type':'application/json','Accept':'application/json, text/event-stream','MCP-Protocol-Version':'2025-11-25'})
+            self.assertEqual(r.status_code,200,r.text)
+            return mod.McpReview.unpack(r.json()['result'])
+        self.review=review;self.backend=backend;self.c=mod.Controller(self.work,backend,self.output,review)
     def prepare(self,p=None):return self.c.prepare('Write a short handover note.',p or plan())
     def upload(self,data=b'Harbor review is ready.'):
         (self.work/'draft.txt').write_bytes(data);return self.c.upload('draft.txt')
@@ -82,7 +87,7 @@ class ControlledTests(unittest.TestCase):
         with self.assertRaises(mod.Blocked):self.c.deliver()
         self.assertFalse(self.delivered_files())
     def test_another_tasks_valid_receipt_cannot_authorize_delivery(self):
-        self.ready();self.c.verify();old=self.c.load();other=self.base/'other';other.mkdir();c=mod.Controller(other,self.backend,self.output);c.prepare('Other task',plan());(other/'d.txt').write_bytes(b'Valid.');c.upload('d.txt');c.verify();ctx=c.load();ctx['receipt_ref']=old['receipt_ref'];c.save(ctx)
+        self.ready();self.c.verify();old=self.c.load();other=self.base/'other';other.mkdir();c=mod.Controller(other,self.backend,self.output,self.review);c.prepare('Other task',plan());(other/'d.txt').write_bytes(b'Valid.');c.upload('d.txt');c.verify();ctx=c.load();ctx['receipt_ref']=old['receipt_ref'];c.save(ctx)
         with self.assertRaises(mod.Blocked):c.deliver()
         self.assertFalse(self.delivered_files())
     def test_auth_or_transport_error_never_falls_back_to_draft(self):
@@ -112,4 +117,29 @@ class ControlledTests(unittest.TestCase):
         real.write_bytes(b'x'*1000001)
         with self.assertRaises(mod.Blocked):self.c.upload('real.txt')
         self.assertFalse(self.delivered_files())
+    def test_final_check_precedes_receipt_completion_and_release(self):
+        self.ready();self.assertFalse(any(m=='MCP' for m,_,_ in self.calls));result=self.c.finalize()
+        self.assertEqual(result['state'],'COMPLETED');self.assertEqual(result['mcp_check']['state'],'PASS')
+        order=[('MCP' if m=='MCP' else 'receipt' if m=='POST' and p.endswith('/receipts') else 'complete' if p.endswith('/complete') else 'result' if p.endswith('/result') else '') for m,p,_ in self.calls]
+        self.assertLess(order.index('MCP'),order.index('receipt'));self.assertLess(order.index('receipt'),order.index('complete'));self.assertLess(order.index('complete'),order.index('result'))
+    def test_missing_mcp_blocks_without_receipt_or_output(self):
+        self.ready();self.c.mcp_review=lambda *a:(_ for _ in ()).throw(mod.Blocked('MCP unavailable'))
+        result=self.c.finalize();self.assertEqual(result['state'],'BLOCKED');self.assertFalse(self.delivered_files());self.assertFalse(any(m=='POST' and p.endswith('/receipts') for m,p,_ in self.calls))
+    def test_mcp_from_different_task_blocks_before_persistence(self):
+        self.ready()
+        def wrong(*args):
+            r=self.review(*args);r['pilot_binding']['task_id']='task-'+'f'*16;return r
+        self.c.mcp_review=wrong;self.assertEqual(self.c.finalize()['state'],'BLOCKED');self.assertFalse(self.delivered_files());self.assertFalse(any(m=='POST' and p.endswith('/receipts') for m,p,_ in self.calls))
+    def test_changed_checks_between_mcp_and_receipt_block_completion(self):
+        self.ready()
+        def different(*args):
+            r=self.review(*args);r['checks'][0]['observed']=0;return r
+        self.c.mcp_review=different;result=self.c.finalize();self.assertEqual(result['state'],'BLOCKED');self.assertIn('Evidence changed',result['reason']);self.assertFalse(any(p.endswith('/complete') for _,p,_ in self.calls));self.assertFalse(self.delivered_files())
+    def test_receipt_alone_without_mcp_check_cannot_publish(self):
+        self.ready();self.c.verify();ctx=self.c.load();del ctx['mcp_check'];self.c.save(ctx)
+        with self.assertRaisesRegex(mod.Blocked,'Matching MCP check'):self.c.deliver()
+        self.assertFalse(self.delivered_files())
+    def test_mcp_error_ambiguous_and_conflicting_evidence_rejected(self):
+        for result in ({'isError':True,'content':[{'type':'text','text':'{}'}]}, {'content':[]}, {'content':[{'type':'text','text':'{}'}]*2}, {'content':[{'type':'text','text':'{}'}],'structuredContent':{'different':True}}, {'content':[{'type':'text','text':'{"decision":"PASS","decision":"FAIL"}'}]}):
+            with self.assertRaises(mod.Blocked):mod.McpReview.unpack(result)
 if __name__=='__main__':unittest.main()

@@ -9,6 +9,7 @@ is not a sandbox against another process that can rewrite that trusted source.
 import argparse
 import base64
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -45,6 +46,33 @@ def strict(data):
 def plain(name):
     if not isinstance(name,str) or not NAME.fullmatch(name) or '..' in name:raise Blocked('Plain bounded filename required')
     return name
+
+def review_digest(receipt):
+    # Timestamps differ across two real checks; every other returned field must agree.
+    return sha(canonical({k:v for k,v in receipt.items() if k!='generated_at'}).encode())
+
+class McpReview:
+    """Use the installed, fixed-host, read-only MCP client and its existing broker."""
+    @staticmethod
+    def unpack(result):
+        if not isinstance(result,dict) or result.get('isError'):raise Blocked('MCP review did not return valid check evidence')
+        content=result.get('content')
+        if not isinstance(content,list) or len(content)!=1 or content[0].get('type')!='text':raise Blocked('MCP review returned no unambiguous check evidence')
+        receipt=strict(content[0].get('text'))
+        if not isinstance(receipt,dict):raise Blocked('MCP review returned no structured check evidence')
+        if 'structuredContent' in result and result['structuredContent']!=receipt:raise Blocked('MCP review evidence disagrees with its displayed result')
+        return receipt
+    def __call__(self,task_id,version_id):
+        try:
+            path=safe_components(Path(__file__).parent/'client.py')
+            spec=importlib.util.spec_from_file_location('stardive_installed_mcp',path)
+            module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+            client=module.Client();client.initialize()
+            result=client.send('tools/call',{'name':'taskflow_review','arguments':{'task_id':task_id,'version_id':version_id}})
+            return self.unpack(result)
+        except Blocked:raise
+        except Exception:
+            raise Blocked('MCP check unavailable; delivery remains blocked') from None
 
 def safe_components(path):
     path=Path(path).absolute()
@@ -88,8 +116,9 @@ class Backend:
             raise Blocked('Backend access unavailable; delivery remains blocked') from None
 
 class Controller:
-    def __init__(self,workdir,backend,output_root):
+    def __init__(self,workdir,backend,output_root,mcp_review=None):
         self.workdir=safe_components(workdir);self.backend=backend
+        self.mcp_review=mcp_review if mcp_review is not None else McpReview()
         self.private=safe_components(self.workdir/'.stardive-controlled')
         self.output_root=safe_components(output_root)
     def load(self):
@@ -110,7 +139,7 @@ class Controller:
         return {'state':state or ctx['state'],'task_id':ctx['task_id'],'version_id':ctx['version_id'],
             'request_sha256':ctx['request_sha256'],'artifact_name':ctx['artifact_name'],'artifact_sha256':ctx.get('artifact_sha256'),
             'receipt_ref':ctx.get('receipt_ref'),'receipt_date':receipt.get('generated_at') if receipt else None,
-            'checks':checks,'reason':reason,'scope':SCOPE}
+            'checks':checks,'reason':reason,'mcp_check':ctx.get('mcp_check'),'scope':SCOPE}
     def capabilities(self):
         spec=self.backend('GET','/openapi.json')
         catalog=spec.get('x-checker-config-schemas')
@@ -152,13 +181,16 @@ class Controller:
         response=self.backend('PUT',f"/api/tasks/{ctx['task_id']}/versions/{ctx['version_id']}",data,{'If-Match':ctx['frozen_sha256']},raw=True)
         if response.get('sha256')!=sha(data):raise Blocked('Upload binding did not match draft bytes')
         ctx.update(state='UPLOADED',artifact_sha256=sha(data));self.save(ctx);return self.describe(ctx)
+    def require_binding(self,ctx,r):
+        if not isinstance(r,dict):raise Blocked('Required structured check evidence is missing')
+        binding=r.get('pilot_binding',{})
+        if binding.get('task_id')!=ctx['task_id'] or binding.get('version_id')!=ctx['version_id'] or binding.get('artifact')!=ctx.get('artifact_sha256') or sha(r.get('request','').encode())!=ctx['request_sha256']:
+            raise Blocked('Receipt does not match this request and draft')
     def receipt(self,ctx):
         ref=ctx.get('receipt_ref')
         if not isinstance(ref,str) or not re.fullmatch(r'receipt-[a-f0-9]{32}',ref):raise Blocked('Verification was skipped: a stored receipt is required')
         r=self.backend('GET',f"/api/tasks/{ctx['task_id']}/receipts/{ref}")
-        binding=r.get('pilot_binding',{})
-        if binding.get('task_id')!=ctx['task_id'] or binding.get('version_id')!=ctx['version_id'] or binding.get('artifact')!=ctx.get('artifact_sha256') or sha(r.get('request','').encode())!=ctx['request_sha256']:
-            raise Blocked('Receipt does not match this request and draft')
+        self.require_binding(ctx,r)
         return r
     @staticmethod
     def require_pass(receipt):
@@ -168,17 +200,31 @@ class Controller:
     def verify(self):
         ctx=self.load()
         if ctx['state']!='UPLOADED':raise Blocked('Verification requires an uploaded draft')
+        # The late MCP review is mandatory, independently of receipt persistence.
+        try:
+            review=self.mcp_review(ctx['task_id'],ctx['version_id']);self.require_binding(ctx,review)
+        except Blocked as exc:
+            ctx['state']='BLOCKED';self.save(ctx)
+            return self.describe(ctx,'BLOCKED',str(exc))
+        try:self.require_pass(review);status='PASS'
+        except Blocked:status='BLOCKED'
+        ctx['mcp_check']={'tool':'taskflow_review','state':status,'checked_at':review.get('generated_at'),'digest':review_digest(review)};self.save(ctx)
         response=self.backend('POST',f"/api/tasks/{ctx['task_id']}/receipts",{'version_id':ctx['version_id']})
         ctx['receipt_ref']=response.get('receipt_ref');self.save(ctx)
         receipt=self.receipt(ctx)
         try:
+            if review_digest(receipt)!=ctx['mcp_check']['digest']:raise Blocked('Evidence changed between the MCP check and saved receipt')
             complete=self.backend('POST',f"/api/tasks/{ctx['task_id']}/complete",{'receipt_ref':ctx['receipt_ref']})
+            self.require_pass(review)
             self.require_pass(receipt)
             if complete.get('state')!='COMPLETED' or complete.get('receipt_ref')!=ctx['receipt_ref']:raise Blocked('Backend did not approve receipt-bound completion')
             ctx['state']='VERIFIED';self.save(ctx);return self.describe(ctx,'VERIFIED',receipt=receipt)
         except Blocked as exc:
             ctx['state']='BLOCKED';self.save(ctx)
             return {**self.describe(ctx,'BLOCKED',str(exc),receipt), 'backend_http':getattr(exc,'status',None)}
+    def finalize(self):
+        verified=self.verify()
+        return self.deliver() if verified['state']=='VERIFIED' else verified
     def deliver(self):
         ctx=self.load()
         if not ctx.get('receipt_ref'):
@@ -188,6 +234,8 @@ class Controller:
             except Blocked as exc:return {**self.describe(ctx,'BLOCKED','Verification was skipped: a stored receipt is required'), 'backend_http':getattr(exc,'status',None)}
             raise Blocked('Missing verification; delivery refused')
         receipt=self.receipt(ctx);self.require_pass(receipt)
+        mcp=ctx.get('mcp_check',{})
+        if mcp.get('tool')!='taskflow_review' or mcp.get('state')!='PASS' or not mcp.get('checked_at') or mcp.get('digest')!=review_digest(receipt):raise Blocked('Matching MCP check is required before delivery')
         if ctx['state'] not in ('VERIFIED','DELIVERED'):raise Blocked('This run has no verified delivery authorization')
         current=self.backend('GET',f"/api/tasks/{ctx['task_id']}/completion")
         if current.get('state')!='COMPLETED' or current.get('receipt_ref')!=ctx['receipt_ref']:raise Blocked('Completion is stale or no longer current')
@@ -209,13 +257,14 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='operation',required=True)
     p=sub.add_parser('prepare');p.add_argument('--request-file',required=True);p.add_argument('--plan-file',required=True)
     p=sub.add_parser('upload');p.add_argument('--draft-file',required=True)
-    sub.add_parser('verify');sub.add_parser('deliver');sub.add_parser('capabilities')
+    sub.add_parser('verify');sub.add_parser('deliver');sub.add_parser('finalize');sub.add_parser('capabilities')
     args=parser.parse_args();controller=Controller(Path.cwd(),Backend(),Path.home()/'workspace/your_files/stardive-controlled')
     try:
         if args.operation=='prepare':result=controller.prepare(read_file(Path.cwd(),args.request_file,40000).decode(),strict(read_file(Path.cwd(),args.plan_file,MAX_BODY)))
         elif args.operation=='capabilities':result=controller.capabilities()
         elif args.operation=='upload':result=controller.upload(args.draft_file)
         elif args.operation=='verify':result=controller.verify()
+        elif args.operation=='finalize':result=controller.finalize()
         else:result=controller.deliver()
     except Blocked as exc:
         result={'state':'BLOCKED','reason':str(exc)[:400],'result':None}
