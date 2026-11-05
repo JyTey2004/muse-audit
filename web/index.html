@@ -7,14 +7,14 @@
   <link rel="canonical" href="https://www.stardive.xyz/hackathon/">
   <meta property="og:title" content="Muse, Make no mistakes!"><meta property="og:description" content="A real product demo, followed by the workflow behind the checks and receipt.">
   <meta property="og:url" content="https://www.stardive.xyz/hackathon/"><meta name="theme-color" content="#0b0e15">
-  <link rel="stylesheet" href="live-demo.css">
+  <link rel="stylesheet" href="live-demo.css?v=final-20261105">
 </head>
 <body>
 <main class="page">
   <header class="intro"><h1>Muse, Make no mistakes!</h1><p>A real task. A separate check. A receipt you can inspect.</p></header>
   <section aria-label="Live product demonstration" class="product-demo">
-    <div class="player"><video id="product-video" width="1600" height="1000" autoplay muted loop playsinline controls preload="metadata" poster="assets/demo/live-product-poster.webp" aria-label="Actual Muse product run from the original request through file checking and a verification receipt"><source src="assets/demo/live-product-demo.mp4" type="video/mp4"><track kind="captions" src="assets/demo/live-product-captions.vtt" srclang="en" label="English">Your browser does not support video. <a href="assets/demo/live-product-demo.mp4">Download the product demo.</a></video></div>
-    <div class="playback"><button id="play-explained" type="button">Play with explanation</button><button id="toggle-captions" type="button" aria-pressed="false">Captions</button><div class="demo-links"><a href="https://github.com/JyTey2004/muse-audit" target="_blank" rel="noopener noreferrer">View source <span aria-hidden="true">↗</span></a><a href="assets/demo/live-product-demo.mp4" download>Download video <span aria-hidden="true">↓</span></a></div></div>
+    <div class="player"><video id="product-video" width="1600" height="1000" autoplay muted loop playsinline controls preload="metadata" poster="assets/demo/live-product-poster.webp?v=9d5d7d1" aria-label="Actual Muse product run from the original request through file checking and a verification receipt"><source src="assets/demo/live-product-demo.mp4?v=9d5d7d1" type="video/mp4"><track kind="captions" src="assets/demo/live-product-captions.vtt" srclang="en" label="English">Your browser does not support video. <a href="assets/demo/live-product-demo.mp4?v=9d5d7d1">Download the product demo.</a></video></div>
+    <div class="playback"><button id="play-explained" type="button">Play with explanation</button><button id="toggle-captions" type="button" aria-pressed="false">Captions</button><div class="demo-links"><a href="https://github.com/JyTey2004/muse-audit" target="_blank" rel="noopener noreferrer">View source <span aria-hidden="true">↗</span></a><a href="assets/demo/live-product-demo.mp4?v=9d5d7d1" download>Download video <span aria-hidden="true">↓</span></a></div></div>
     <p class="recording-note" id="recording-note" role="status">43 seconds · Actual Muse interface frames, with waiting shortened.</p>
     <div class="result-strip" aria-label="The recorded result"><div><span>Requested text</span><strong><i aria-hidden="true">✓</i> Present in the file</strong></div><div><span>Word limit</span><strong><i aria-hidden="true">✓</i> 9 of 20 words</strong></div><a href="assets/demo/handoff-demo-20261104.txt" target="_blank" rel="noopener">Open checked file <span aria-hidden="true">↗</span></a></div>
   </section>
@@ -28,6 +28,6 @@
     <details class="technical"><summary>See the technical workflow</summary><p>The saved Muse workflow uses separate LLM workers for the work and check phases. The checking worker calls the read-only MCP review. The server recomputes the receipt, then checks the current version again before completion and download. The publisher compares the downloaded bytes with the verified artifact.</p><p>The diagram shows selected evidence links. It does not capture every hidden agent action or establish a different-model semantic judge. This demo’s saved receipt, completion and 48-byte result were independently retrieved and matched.</p><p><a href="build-notes.html#engineering">Engineering notes</a> · <a href="assets/demo/live-product-record.json">Recorded task and receipt</a> · <a href="assets/demo/live-product-event-graph.json">Evidence links</a> · <a href="assets/demo/handoff-demo-20261104.txt" download>Checked note</a></p></details>
   </section>
 </main>
-<script src="live-demo.js"></script>
+<script src="live-demo.js?v=final-20261105"></script>
 </body>
 </html>

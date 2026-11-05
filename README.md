@@ -2,7 +2,7 @@
 
 **AI work checked against what you asked for.**
 
-[Product demo](https://www.stardive.xyz/hackathon/) · [Watch the video](https://www.stardive.xyz/hackathon/assets/demo/live-product-demo.mp4) · [Workflow](connectors/muse_controlled/README.md) · [Hackathon notes](docs/HACKATHON.md)
+[Product demo](https://www.stardive.xyz/hackathon/) · [Watch the submission video](https://github.com/JyTey2004/muse-audit/releases/tag/meta-hackathon-2026) · [Workflow](connectors/muse_controlled/README.md) · [Hackathon notes](docs/HACKATHON.md)
 
 [![Watch the actual Muse task and verification receipt](docs/demo/live-product-poster.webp)](https://www.stardive.xyz/hackathon/)
 
