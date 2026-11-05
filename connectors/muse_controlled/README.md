@@ -139,17 +139,19 @@ routing and trusted-source/private-context boundaries above still apply.
 
 ## Action card
 
-The final check child reads the exact private `assurance-card.json` generated
-by the controller and passes its `summary` object unchanged to the native
-`widget.create_list_widget`. It returns the real embed token; the parent displays
-it beside the normal guarded file attachment. Clicking "See what Muse did"
-opens a simple action list in chat, with "Audited by Stardive" below it.
+The final check child passes the exact private `assurance-card.html` generated
+by the controller to native `widget.create_html_file_widget`, with the returned
+display/fallback text unchanged and `present_now:false`. It returns the real
+embed token; the parent displays it beside the normal guarded file attachment.
+Clicking "See details" reveals the recorded actions inside that same card.
+The toggle uses only the widget's local state: no chat message, agent call,
+backend request or new receipt. The footer stays below the collapsible panel.
 
 The controller records actual completed transitions, never model-written action
 narrative. It saves an immutable, task-bound display snapshot under
 `~/workspace/.stardive-assurance/cards/task-<id>.json` with private permissions.
-The exact card-generated request carries that task ID. The configured parent
-handles it separately from file requests: run only `controller.py card-details
+Historical native list cards use a task-bound follow-up request. The configured
+parent handles those separately from file requests: run only `controller.py card-details
 --task-id task-<id>`, require the returned `detail_request` to match the clicked
 message, then pass `widget_args` unchanged to `widget.create_list_widget` and
 embed the real token. This command reads only that snapshot. It never contacts
@@ -168,8 +170,11 @@ Native HTML widgets failed to preview in this consumer client on30 October2026,
 including a bare static probe, both file/inline variants and a parent-created
 card. Those failures are retained. The built-in native list card rendered and
 its tap successfully opened recorded actions. It uses a read-only follow-up in
-chat rather than an in-place HTML expansion. The HTML renderer remains a private
-source/snapshot artifact; it is not the active presentation route.
+chat rather than an in-place HTML expansion. Those historical cards remain.
+On31 October2026 the official native Muse update from10.0 to10.1 restored the
+private artifact preview and HTML card rendering. The existing task-bound HTML
+card visibly expanded in place. v7 reactivates that renderer for new tasks;
+the audit and delivery controller, backend and credentials remain unchanged.
 
 The same dedicated-chat routing and trusted-source/private-context boundaries
 still apply; no global host interception or continuously live card is claimed.
@@ -195,3 +200,74 @@ matched the stored audits, which independently rechecked FRESH. The36 controller
 29 asynchronous workflow checks (also executed in Muse), required54 core and
 original protocol tests passed. No backend, credential, scope or permission
 change was required. HTML preview failures remain part of the acceptance record.
+
+## Native preview frame acceptance (1 November2026)
+
+The coordinated `stardive-verification-card` workflow keeps the request/checks/
+outcome design and embeds the generated HTML card. Its controller and audit gates
+are unchanged. Fresh normal, failed and skipped requests ran in Muse; the normal
+file was delivered, while failed and skipped verification returned BLOCKED with
+no final file. These gate outcomes were independently revalidated over HTTPS/MCP.
+
+Muse10.1 required a clean restart to render the new previews visibly. Its inline
+preview retains its initial height: simply revealing more HTML clips the lower
+content and footer. The v9 renderer therefore keeps a constant360px frame and
+switches between the summary and internally scrolling actions/checks, with the
+footer outside both regions. This source fix passed the38 controller checks and
+is installed and visually accepted in native Muse10.1. A fresh ordinary JSON
+request delivered `project-handover.json` with4 passing checks and receipt
+`receipt-f2dd246c2a034f81b9ec45aa7f3a9ee6`. Its98 bytes matched the actual UI
+download, native publisher and backend release exactly; the receipt independently
+rechecked FRESH and matched the native MCP evidence digest.
+
+Actual native screenshots show the summary, expanded actions and scrolling
+checks with “Audited by Stardive” visible at the bottom. The normalized chat tree
+outside the widget was identical through expansion and collapse: no additional
+chat message was created. Expansion changes content inside the fixed frame;
+Muse's outside chat frame does not grow.
+
+The retained real v8 failed and skipped cases use the same unchanged gates.
+Both independently remain BLOCKED with result409 and no published file; failed
+verification has1 PASS/1 FAIL and a stored audit, while skipped verification has
+no MCP check or receipt. Those negative cases were not rerun for this UI-only fix.
+Browser preview acceptance and a global Muse publication veto remain unclaimed.
+The earlier unavailable/blank/clipped previews are preserved. Detailed acceptance
+and screenshots are retained in
+`../muse-app-runs/20261031-preview-repair/acceptance-progress.json` from the
+integration checkout.
+
+## Plain-language card (2 November2026)
+
+The v10 renderer leads with "Your file is ready", "Your file needs a fix" or
+"Your file has not been checked". Its smaller300px frame shows the filename and
+check count, then locally reveals four selected recorded milestones and the
+"You asked for / In your file" comparisons. The original request is inside the
+details. Internal receipt-persistence and release transitions remain in the
+technical records. The audit footer stays outside the scrolling region; skipped
+verification says "Not yet audited" and "No receipt yet".
+
+The subsequent v11 presentation update uses a440×240px card, down from580×300px.
+It removes the duplicate brand/status row and leads with "All set!" and
+"Your file is ready. We checked the details below for you." The footer remains
+"Audited by Stardive". Native expansion/collapse and footer visibility passed on
+read-only views of the accepted v10 records, with unchanged surrounding chat.
+This was a display replay, not a fresh workflow or a newly issued receipt.
+The38 controlled and54 core tests plus explicit protocol probe passed again.
+The installed backend, controller, publisher and saved workflows are unchanged.
+Exact presentation acceptance is in
+`../muse-app-runs/20261102-compact-card/acceptance.json`.
+
+All three cases ran freshly with v10 in native Muse10.1. The welcome note passed
+two checks and delivered49 bytes; its actual UI download, native publisher and
+backend release matched, and the receipt independently rechecked FRESH. The fresh
+failed-check case had1 PASS/1 FAIL; the omission control had no MCP review or
+receipt. Both remained BLOCKED, returned result409 and published no final file.
+The native MCP digests matched the stored receipts. Expansion and collapse left
+the surrounding chat unchanged, and actual screenshots cover all three states.
+
+Local validation passed38 controller tests,54 core tests and29 asynchronous
+workflow checks, plus the explicit protocol probe. Backend, controller, saved
+workflows, authentication and release gates are unchanged. Detailed acceptance
+is in `../muse-app-runs/20261101-consumer-ui/acceptance.json`; the earlier folder
+name reflects when this revision began. The submission draft and demo script
+explain the protocol and retain the same trust and coverage boundaries.

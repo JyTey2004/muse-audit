@@ -1,0 +1,8 @@
+{
+  "release_date": "2026-11-05",
+  "python_tests": 269,
+  "optional_extension_offline_tests": 24,
+  "workflow_and_real_mcp_probes": "PASS",
+  "history_secret_scan": "zero findings",
+  "scope": "Offline suites, synthetic data and recorded native acceptance are distinct. No API-key-backed extension run or finished benchmark is claimed."
+}

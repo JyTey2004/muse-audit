@@ -33,8 +33,10 @@ def native_payloads(report):
     try:when=datetime.fromisoformat(stamp).strftime('%d %b %Y · %H:%M UTC')
     except (TypeError,ValueError):when='No completed audit'
     footer={'title':'Audited by Stardive' if audited else 'Audit not completed · Stardive','subtitle':when+((' · Receipt '+ref.removeprefix('receipt-')[:8]) if audited else ''),'tertiary_title':'Selected requirements only','type':'generic','data':{}}
-    title=f"{len(checks)} {'check' if len(checks)==1 else 'checks'} passed" if ok else 'Delivery blocked'
-    summary_row={'title':title,'subtitle':'See what Muse did' if request else 'Required task evidence is unavailable','type':'send_message' if request else 'generic','data':{'text':request} if request else {}}
+    title='Task fulfilled · listed requirements' if ok else 'Delivery blocked'
+    summary_row={'title':title,'subtitle':f"{len(checks)} checks passed · See what Stardive checked" if ok and request else 'See checks and the verification issue' if request else 'Required task evidence is unavailable','type':'send_message' if request else 'generic','data':{'text':request} if request else {}}
+    original=report.get('request')
+    request_row={'title':'What you asked for','subtitle':str(original)[:1200] if isinstance(original,str) and original else 'Original wording unavailable in this historical snapshot.','type':'generic','data':{}}
     rows=[]
     for key,label in [('request_saved','Saved your request'),('file_prepared','Prepared '+str(artifact)),('requirements_checked',f"Checked {len(checks)} {'requirement' if len(checks)==1 else 'requirements'}" if checks else 'Ran verification'),('result_delivered','Delivered the verified file')]:
         if key in records:
@@ -45,21 +47,30 @@ def native_payloads(report):
                 row['subtitle']=' · '.join(f"{statuses.count(s)} {labels[s]}" for s in labels if s in statuses)
                 if 0<len(checks)<=4:row['tertiary_title']=' · '.join(str(c.get('check') or 'Requirement')[:80] for c in checks)
             rows.append(row)
+    rows.append(request_row)
     for c in checks:
-        if c.get('status')!='PASS':
-            shown=lambda value:'Not established' if value is None else str(value).lower() if isinstance(value,bool) else str(value)[:100]
-            rows.append({'title':str(c.get('check') or 'Requirement')[:160],'subtitle':f"{c.get('status','UNKNOWN')} · Observed: {shown(c.get('observed'))} · Required: {shown(c.get('required'))}",'type':'generic','data':{}})
+        shown=lambda value:'Not established' if value is None else str(value).lower() if isinstance(value,bool) else str(value)[:100]
+        rows.append({'title':str(c.get('check') or 'Requirement')[:160],'subtitle':f"{c.get('status','UNKNOWN')} · Observed: {shown(c.get('observed'))} · Required: {shown(c.get('required'))}",'type':'generic','data':{}})
     # Muse caps native list cards at20 rows. Every non-PASS remains represented;
     # excessive detail uses an explicit count, rather than silently hiding a failure.
     if len(rows)>18:
-        hidden=len(rows)-17;rows=rows[:17]+[{'title':f'{hidden} more recorded checks','subtitle':'Verification remains blocked; full checks stay in the audit record.','type':'generic','data':{}}]
+        hidden=len(rows)-17;rows=rows[:17]+[{'title':f'{hidden} more recorded checks','subtitle':('Listed checks passed; ' if ok else 'Verification remains blocked; ')+'full checks stay in the audit record.','type':'generic','data':{}}]
     if not ok:rows.append({'title':'Delivery withheld','subtitle':'A required check failed or verification is incomplete. No file was delivered.','type':'generic','data':{}})
     rows.append(footer)
     return {'task_id':tid,'version_id':report.get('version_id'),'receipt_ref':report.get('receipt_ref'),'request_sha256':report.get('request_sha256'),'artifact_sha256':report.get('artifact_sha256'),'actions':report.get('actions',[]),'detail_request':request,
-        'summary':{'title':'Stardive assurance','items':[summary_row,footer],'present_now':False},
+        'summary':{'title':'Stardive verification','items':[summary_row,request_row,footer],'present_now':False},
         'details':{'title':'What Muse did','subtitle':str(artifact),'items':rows,'present_now':False}}
 
 def render_card(report):
+    from pathlib import Path
+    import importlib.util
+    spec=importlib.util.spec_from_file_location('stardive_verification_view',Path(__file__).with_name('verification_view.py'))
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    records={a.get('id'):a for a in report.get('actions',[]) if isinstance(a,dict)}
+    audited=bool(report.get('audit_record_matched') is True and re.fullmatch(r'receipt-[a-f0-9]{32}',report.get('receipt_ref') or '') and 'receipt_saved' in records)
+    return module.render(report,passed(report),audited)
+
+def legacy_render_card(report):
     ok=passed(report);checks=report.get('checks',[])
     records={a.get('id'):a for a in report.get('actions',[]) if isinstance(a,dict)}
     ref=report.get('receipt_ref') or ''

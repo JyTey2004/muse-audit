@@ -86,8 +86,18 @@ jobs:
         run: python tests/test_protocol.py
 
       - name: Run synthetic offline demo
+        # These tests use synthetic inputs and make no external model calls.
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: python -m muse_audit.demo --output "$RUNNER_TEMP/muse-audit-demo"
+
+      - name: Run controlled workflow and consumer card checks
+        run: |
+          python -m unittest discover -s tests_controlled -v
+          node tests_controlled/test_workflow.mjs
+
+      - name: Run optional Meta consumer extension offline checks
+        working-directory: extensions/meta_consumer
+        run: python -m unittest discover -s tests -v
 
       - name: Verify original examples remain unchanged
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}

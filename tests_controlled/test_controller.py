@@ -151,14 +151,14 @@ class ControlledTests(unittest.TestCase):
     def test_passing_card_is_private_and_uses_matched_audit(self):
         self.ready();report=self.c.finalize();r=self.c.presentation(report);p=Path(r['assurance_card']['path'])
         self.assertEqual(p.parent,self.c.private);self.assertEqual(p.name,'assurance-card.html');html=p.read_text()
-        self.assertIn('1 check passed',html);self.assertIn('Audited by Stardive',html);self.assertIn('Delivered the verified file',html);self.assertNotIn('sandbox:',html)
+        self.assertIn('1 check passed',html);self.assertIn('Audited by Stardive',html);self.assertIn('Delivered your file',html);self.assertNotIn('sandbox:',html)
         self.assertEqual(r['receipt_ref'],report['receipt_ref']);self.assertEqual(r['result'],report['result'])
     def test_failed_card_shows_blocked_and_never_claims_delivery(self):
         self.ready(plan(1));report=self.c.finalize();self.assertTrue(report['audit_record_matched']);r=self.c.presentation(report);html=Path(r['assurance_card']['path']).read_text()
-        self.assertIn('Delivery blocked',html);self.assertIn('Audited by Stardive',html);self.assertIn('Delivery withheld',html);self.assertNotIn('Delivered the verified file',html);self.assertFalse(self.delivered_files())
+        self.assertIn('Your file needs a fix',html);self.assertIn('Audited by Stardive',html);self.assertIn('Held back the file',html);self.assertNotIn('Delivered your file',html);self.assertFalse(self.delivered_files())
     def test_skipped_card_cannot_claim_a_completed_audit(self):
         self.ready();report=self.c.deliver();r=self.c.presentation(report);html=Path(r['assurance_card']['path']).read_text()
-        self.assertIn('Audit not completed',html);self.assertNotIn('Audited by Stardive',html);self.assertNotIn('Checked 0 requirements',html);self.assertFalse(self.delivered_files())
+        self.assertIn('Not yet audited',html);self.assertIn('No receipt yet',html);self.assertNotIn('Audited by Stardive',html);self.assertNotIn('Checked 0 requirements',html);self.assertFalse(self.delivered_files())
     def test_card_escapes_task_text_without_executable_injection(self):
         self.ready();report=self.c.finalize();report['checks'][0]['check']='<script>evil()</script>';report['artifact_name']='"><img src=x onerror=evil()>'
         html=Path(self.c.presentation(report)['assurance_card']['path']).read_text()
@@ -185,5 +185,16 @@ class ControlledTests(unittest.TestCase):
         self.assertEqual(self.calls,calls);self.assertEqual(Path(card['registry_path']).read_bytes(),before)
         for invalid in ('../context','task-'+('f'*16)):
             with self.assertRaises(mod.Blocked):self.c.card_details(invalid)
+        self.assertEqual(self.calls,calls)
+    def test_displayed_request_is_bound_to_the_original_request(self):
+        self.ready();report=self.c.finalize();self.assertEqual(report['request'],self.c.load()['request'])
+        ctx=self.c.load();ctx['request']='A different request';self.c.save(ctx)
+        self.assertIsNone(self.c.describe(ctx)['request'])
+    def test_card_shows_request_and_values_for_passing_checks_without_rechecking(self):
+        self.ready();report=self.c.finalize();calls=list(self.calls);card=self.c.presentation(report)['assurance_card']
+        html=Path(card['path']).read_text();payload=json.loads(Path(card['native_payload_path']).read_text())
+        self.assertIn('Your request',html);self.assertIn('You asked for',html);self.assertIn('In your file',html)
+        self.assertEqual(payload['summary']['items'][1]['subtitle'],report['request'])
+        self.assertTrue(any('Observed:' in item.get('subtitle','') for item in payload['details']['items']))
         self.assertEqual(self.calls,calls)
 if __name__=='__main__':unittest.main()

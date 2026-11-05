@@ -1,0 +1,264 @@
+{
+  "project": "Stardive",
+  "prepared_on_singapore": "2026-11-04",
+  "scope": "Hackathon prototype; selected file checks in a configured native Muse workflow",
+  "native_acceptance_recorded_2026_10_30": {
+    "supported_json_task": "COMPLETED; native file, UI download and backend snapshot matched",
+    "conflicting_six_word_three_word_cap_task": "BLOCKED; no final output",
+    "deliberately_skipped_verification_control": "BLOCKED; no audit, completion record or final output",
+    "card_interactions": "Recorded native taps opened the correct task-bound action views"
+  },
+  "card_revision_2026_10_31": {
+    "local_controller_tests": {
+      "passed": 38
+    },
+    "core_tests": {
+      "passed": 54
+    },
+    "workflow_harness_cases": {
+      "passed": 29
+    },
+    "protocol_checks": "passed",
+    "fresh_native_acceptance": "Completed on 1 November 2026: fresh v9 normal task, native visual acceptance and independent receipt verification; retained v8 negative cases independently revalidated."
+  },
+  "exploratory_comparison_2026_10_29": {
+    "synthetic_task_pairs": 6,
+    "ordinary_muse_correct_artifacts": 6,
+    "muse_plus_stardive_correct_artifacts": 6,
+    "accuracy_advantage_demonstrated": false,
+    "limits": [
+      "single account",
+      "model version unpinned",
+      "implementation changes during cohort",
+      "shared-memory contamination in some assisted runs",
+      "no human checking-time measurement"
+    ]
+  },
+  "homepage_interaction": "Browser-local deterministic example; not a live native Muse run",
+  "not_established": [
+    "complete requirement coverage",
+    "source authenticity",
+    "general semantic correctness",
+    "privacy",
+    "global host enforcement",
+    "real merchant integration",
+    "physical delivery",
+    "production reliability",
+    "user demand",
+    "insurance coverage"
+  ],
+  "insurance": {
+    "coverage": "none",
+    "insurer_partnership_established": false,
+    "status": "future research and partnership direction"
+  },
+  "native_acceptance_2026_11_01": {
+    "native_app_version": "10.1",
+    "renderer_sha256": "56ec0bf109ea0e3bdabea06de648d3ff784014f4da4e5654c7fac12e0a343279",
+    "visual": "Card expands and collapses in place; internally scrolling checks preserve the visible Audited by Stardive footer.",
+    "chat_outside_widget": "Normalized native chat tree unchanged through expand and collapse.",
+    "normal_v9": {
+      "case": "normal",
+      "task_id": "task-29d223236dd94fe9",
+      "original_request_exact": true,
+      "completion": "COMPLETED",
+      "receipt_ref": "receipt-f2dd246c2a034f81b9ec45aa7f3a9ee6",
+      "counts": {
+        "BLOCKED": 0,
+        "FAIL": 0,
+        "PASS": 4,
+        "STALE": 0,
+        "UNKNOWN": 0
+      },
+      "recheck": "FRESH",
+      "result_http": 200,
+      "bytes": 98,
+      "sha256": "55759f8427d3bbabc3a7573bb5482e96126ece948cc620cd5a1dbaa5a9ae3ec7",
+      "actual_ui_download_matches": true
+    },
+    "negative_cases": "Real failed and skipped cases use retained v8 runs with unchanged backend gates; independently revalidated on 1 November, not rerun through the v9 UI.",
+    "failed_v8": {
+      "completion": "BLOCKED",
+      "PASS": 1,
+      "FAIL": 1,
+      "result_http": 409,
+      "native_output": false,
+      "stored_receipt_recheck": "FRESH"
+    },
+    "skipped_v8": {
+      "completion": "BLOCKED",
+      "result_http": 409,
+      "mcp_review": false,
+      "receipt": false,
+      "native_output": false
+    },
+    "limits": [
+      "Configured controlled Muse entry point only",
+      "Browser preview not revalidated",
+      "No global host veto",
+      "No new accuracy comparison or user-effort study"
+    ]
+  },
+  "latest_native_revision": "v11 presentation; v10 fresh task-delivery cohort",
+  "native_acceptance_2026_11_02": {
+    "acceptance": {
+      "status": "COMPLETE_NATIVE_V10",
+      "date": "2026-11-02",
+      "renderer_sha256": "d7bd013d515ea0c73203d4be8176a2ad5af503969d4da87d8c76cf8465c973bb",
+      "native_app": "Muse10.1",
+      "UI": "Plain-language summary,4 selected milestones, original request inside details,300px fixed frame, local disclosure, pinned audit footer",
+      "native_cases": "Fresh normal, failed-check and skipped-check cases all use v10 renderer",
+      "normal": {
+        "checks_passed": 2,
+        "bytes": 49,
+        "receipt_ref": "receipt-c82e8c25323349ee84573267e29b6c51",
+        "download_matches": true,
+        "recheck": "FRESH"
+      },
+      "failed": {
+        "PASS": 1,
+        "FAIL": 1,
+        "completion": "BLOCKED",
+        "result_http": 409,
+        "output_present": false
+      },
+      "skipped": {
+        "mcp": null,
+        "receipt": null,
+        "completion": "BLOCKED",
+        "result_http": 409,
+        "output_present": false
+      },
+      "no_extra_messages": "PASS; native chat outside widget identical through normal expansion/collapse",
+      "automated_checks": {
+        "controller": 38,
+        "core_including_protocol": 54,
+        "workflow": 29,
+        "explicit_protocol": "PASS"
+      },
+      "scope": "Configured controlled Muse flow; native acceptance. No global host veto or new browser acceptance claim."
+    },
+    "independent_verification": {
+      "date": "2026-11-02",
+      "MCP": "Exactly three read-only tools",
+      "cases": [
+        {
+          "case": "normal",
+          "task_id": "task-0646d310a4d44e84",
+          "original_request_exact": true,
+          "completion": "COMPLETED",
+          "receipt_ref": "receipt-c82e8c25323349ee84573267e29b6c51",
+          "counts": {
+            "BLOCKED": 0,
+            "FAIL": 0,
+            "PASS": 2,
+            "STALE": 0,
+            "UNKNOWN": 0
+          },
+          "recheck": "FRESH",
+          "result_http": 200,
+          "bytes": 49,
+          "sha256": "71cbe3ddf478f0dbeb77393c5f4e9dababd8b8679d03c4c4a371290ff30d49cf",
+          "actual_ui_download_matches": true
+        },
+        {
+          "case": "failed",
+          "task_id": "task-df07dab864334385",
+          "original_request_exact": true,
+          "completion": "BLOCKED",
+          "receipt_ref": "receipt-976c6be4b52f42e9b8f0429e90eb4713",
+          "counts": {
+            "BLOCKED": 0,
+            "FAIL": 1,
+            "PASS": 1,
+            "STALE": 0,
+            "UNKNOWN": 0
+          },
+          "recheck": "FRESH",
+          "result_http": 409
+        },
+        {
+          "case": "skipped",
+          "task_id": "task-bed9a1b276d84d49",
+          "original_request_exact": true,
+          "completion": "BLOCKED",
+          "result_http": 409,
+          "no_receipt": true
+        }
+      ],
+      "scope": "Controlled Muse entry point; no global host interception"
+    },
+    "receipt_binding": {
+      "result": "PASS",
+      "cases": [
+        {
+          "case": "normal",
+          "mcp_digest_matches_stored_receipt": true,
+          "digest": "a95bda1b29c2ccb2ebccd3c5b47a6d644c91d5c6679b7a76f31520cb0d9645fa"
+        },
+        {
+          "case": "failed",
+          "mcp_digest_matches_stored_receipt": true,
+          "digest": "fec8a36fdd5abf8226a3ef26dec3c050437e76fe16df20b987faa088e7fab3f8"
+        }
+      ],
+      "actual_ui_download_matches_publisher": true,
+      "skipped_no_mcp_no_receipt": true
+    },
+    "in_place_disclosure": {
+      "result": "PASS",
+      "test": "Native chat outside the card unchanged through expansion and collapse",
+      "normalized_chat_sha256": "94ae671007b6d24dd198ec7be77c1d5bba9e0decc0cc367cdc97dfff5cc4cfe1"
+    },
+    "historical_records": "Earlier v9 and v8 evidence remains historical; all three cases in this cohort are fresh v10 native runs."
+  },
+  "latest_fresh_gate_cohort": "v10",
+  "compact_presentation_v11": {
+    "acceptance": {
+      "status": "COMPLETE_NATIVE_V11_PRESENTATION",
+      "date": "2026-11-02",
+      "dimensions": {
+        "previous": [
+          580,
+          300
+        ],
+        "current": [
+          440,
+          240
+        ],
+        "height_reduction_percent": 20
+      },
+      "renderer_sha256": "b254143f92408356100850220c78bd0556baf7d26da7034dd21ca6f3d3184c83",
+      "copy": "All set! Your file is ready. We checked the details below for you.",
+      "native_visual": "Collapsed/expanded normal card and skipped card visibly rendered; footer remains visible; local disclosure creates no messages",
+      "local_tests": {
+        "controller": 38,
+        "core_including_protocol": 54,
+        "explicit_protocol": "PASS"
+      },
+      "scope": "Presentation-only replay of accepted v10 records; current completion/receipt read-only checks passed; no new workflow runs or receipts; backend/controller/workflows unchanged"
+    },
+    "in_place_disclosure": {
+      "result": "PASS",
+      "test": "native chat outside assurance widgets unchanged through expansion/collapse",
+      "normalized_chat_sha256": "ab0757102530d8c319293463ade61a870918ada9b3cc4a5bad1996c2a5a5faed"
+    },
+    "fresh_gate_cohort": false,
+    "record_source": "Accepted v10 records; read-only presentation replay and current backend GET checks"
+  },
+  "hero_demo_video": {
+    "title": "Muse, Make no mistakes!",
+    "narrated_seconds": 70,
+    "hero_loop": "Condensed replay from the same rendered source",
+    "source_recorded_date": "2026-11-02",
+    "source_task_id": "task-0646d310a4d44e84",
+    "source_receipt_ref": "receipt-c82e8c25323349ee84573267e29b6c51",
+    "selected_checks": 2,
+    "artifact_bytes": 49,
+    "artifact_sha256": "71cbe3ddf478f0dbeb77393c5f4e9dababd8b8679d03c4c4a371290ff30d49cf",
+    "format": "Designed motion replay from actual retained records; compressed timing, not a live feed or continuous screen recording",
+    "llm_claim": "Separate Muse work/check phases; checking worker invokes executable validators. No different-model semantic independence established.",
+    "graph_claim": "Selected reconstructed evidence links; not a complete hidden-action graph",
+    "active_benchmark_data_included": false
+  }
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Muse, Make no mistakes!</title>
+  <meta name="description" content="Watch a real Muse task move from a request to a checked file and receipt. Then see the simple workflow behind it.">
+  <link rel="canonical" href="https://www.stardive.xyz/hackathon/">
+  <meta property="og:title" content="Muse, Make no mistakes!"><meta property="og:description" content="A real product demo, followed by the workflow behind the checks and receipt.">
+  <meta property="og:url" content="https://www.stardive.xyz/hackathon/"><meta name="theme-color" content="#0b0e15">
+  <link rel="stylesheet" href="live-demo.css">
+</head>
+<body>
+<main class="page">
+  <header class="intro"><h1>Muse, Make no mistakes!</h1><p>A real task. A separate check. A receipt you can inspect.</p></header>
+  <section aria-label="Live product demonstration" class="product-demo">
+    <div class="player"><video id="product-video" width="1600" height="1000" autoplay muted loop playsinline controls preload="metadata" poster="assets/demo/live-product-poster.webp" aria-label="Actual Muse product run from the original request through file checking and a verification receipt"><source src="assets/demo/live-product-demo.mp4" type="video/mp4"><track kind="captions" src="assets/demo/live-product-captions.vtt" srclang="en" label="English">Your browser does not support video. <a href="assets/demo/live-product-demo.mp4">Download the product demo.</a></video></div>
+    <div class="playback"><button id="play-explained" type="button">Play with explanation</button><button id="toggle-captions" type="button" aria-pressed="false">Captions</button><div class="demo-links"><a href="https://github.com/JyTey2004/muse-audit" target="_blank" rel="noopener noreferrer">View source <span aria-hidden="true">↗</span></a><a href="assets/demo/live-product-demo.mp4" download>Download video <span aria-hidden="true">↓</span></a></div></div>
+    <p class="recording-note" id="recording-note" role="status">43 seconds · Actual Muse interface frames, with waiting shortened.</p>
+    <div class="result-strip" aria-label="The recorded result"><div><span>Requested text</span><strong><i aria-hidden="true">✓</i> Present in the file</strong></div><div><span>Word limit</span><strong><i aria-hidden="true">✓</i> 9 of 20 words</strong></div><a href="assets/demo/handoff-demo-20261104.txt" target="_blank" rel="noopener">Open checked file <span aria-hidden="true">↗</span></a></div>
+  </section>
+  <section class="explanation" aria-labelledby="workflow-title"><h2 id="workflow-title">What happens after you ask?</h2><p>Muse makes the file. A separate checking phase compares it with the saved requirements. The checked result gets a receipt before the file is delivered.</p>
+    <div class="workflow" role="img" aria-label="Your request flows to Muse making the file, a separate check, a receipt, and delivery. A failed or missing check holds the file back."><div class="flow-box"><strong>Your request</strong><span>Save what you asked for</span></div><span class="arrow" aria-hidden="true">→</span><div class="flow-box"><strong>Muse makes the file</strong><span>Prepare a private draft</span></div><span class="arrow" aria-hidden="true">→</span><div class="flow-box check"><strong>A separate check</strong><span>Compare the actual file</span></div><span class="arrow" aria-hidden="true">→</span><div class="flow-box"><strong>Receipt + file</strong><span>Release the checked result</span></div></div>
+    <p class="failure-note"><span aria-hidden="true">↳</span> If a required check fails or verification is missing, the file stays held back.</p>
+  </section>
+  <section class="explanation" aria-labelledby="receipt-title"><h2 id="receipt-title">What makes the receipt useful?</h2><p>It connects the saved request, the version that was checked and the file that was delivered. An old receipt cannot approve a different result.</p>
+    <div class="evidence-map" role="img" aria-label="The receipt links to the original request, checked file version and executed checks, then to the matching delivered file."><div class="evidence-inputs"><div class="evidence-box">Original request</div><div class="evidence-box">Checked file version</div><div class="evidence-box">Executed checks</div></div><div class="evidence-connector" aria-hidden="true"><i></i><i></i><i></i></div><div class="receipt-box"><strong>Verification receipt</strong><span>The task and evidence must match</span></div><span class="arrow" aria-hidden="true">→</span><div class="evidence-box delivered">Delivered file</div></div>
+    <p class="scope">The receipt covers the listed checks. The checklist and the available evidence define its limits.</p>
+    <details class="technical"><summary>See the technical workflow</summary><p>The saved Muse workflow uses separate LLM workers for the work and check phases. The checking worker calls the read-only MCP review. The server recomputes the receipt, then checks the current version again before completion and download. The publisher compares the downloaded bytes with the verified artifact.</p><p>The diagram shows selected evidence links. It does not capture every hidden agent action or establish a different-model semantic judge. This demo’s saved receipt, completion and 48-byte result were independently retrieved and matched.</p><p><a href="build-notes.html#engineering">Engineering notes</a> · <a href="assets/demo/live-product-record.json">Recorded task and receipt</a> · <a href="assets/demo/live-product-event-graph.json">Evidence links</a> · <a href="assets/demo/handoff-demo-20261104.txt" download>Checked note</a></p></details>
+  </section>
+</main>
+<script src="live-demo.js"></script>
+</body>
+</html>

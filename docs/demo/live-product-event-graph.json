@@ -1,0 +1,66 @@
+{
+  "nodes": [
+    {
+      "id": "request",
+      "label": "Saved original request"
+    },
+    {
+      "id": "version",
+      "label": "Checked file version",
+      "version_id": "v-e091dd6cb9314b16bb331be3752b18ce",
+      "sha256": "5dbeb186af5e8b37328a71ee9d5415907a6fbce5d72de3ea7a9631ba53f5390a"
+    },
+    {
+      "id": "checks",
+      "label": "2 executed checks passed"
+    },
+    {
+      "id": "receipt",
+      "label": "Verification receipt",
+      "receipt_ref": "receipt-e0075a9f325245a4b82cc07585591337"
+    },
+    {
+      "id": "completion",
+      "label": "Completion approved",
+      "state": "COMPLETED"
+    },
+    {
+      "id": "result",
+      "label": "Matching 48-byte result",
+      "sha256": "5dbeb186af5e8b37328a71ee9d5415907a6fbce5d72de3ea7a9631ba53f5390a"
+    }
+  ],
+  "links": [
+    {
+      "from": "request",
+      "to": "receipt",
+      "binding": "Original request matches frozen task"
+    },
+    {
+      "from": "version",
+      "to": "receipt",
+      "binding": "Version ID and artifact digest"
+    },
+    {
+      "from": "checks",
+      "to": "receipt",
+      "binding": "2 passing selected checks"
+    },
+    {
+      "from": "receipt",
+      "to": "completion",
+      "binding": "Matching receipt reference"
+    },
+    {
+      "from": "completion",
+      "to": "result",
+      "binding": "Guarded GET returned 200"
+    },
+    {
+      "from": "version",
+      "to": "result",
+      "binding": "48 bytes and SHA-256 match"
+    }
+  ],
+  "scope": "Selected retained request, version, receipt, completion and result bindings; not a complete hidden action trace."
+}

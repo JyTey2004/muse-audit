@@ -1,0 +1,43 @@
+{
+  "record_type": "Curated historical native Muse artifact evidence",
+  "recorded_at": "2026-10-30T08:41:50.516844+00:00",
+  "request": "Create a JSON file named review-settings.json. Set project to Cedar, owner to Leo, review_date to 2026-12-23, and notifications_enabled to false. Give me the file.",
+  "task_id": "task-137c059478654e5b",
+  "run_id": "workflow-run-3ca5120147394c7297c33367d0286df8",
+  "version_id": "v-3291dadd90924f5885ee3544448c2834",
+  "receipt_ref": "receipt-d840a915c89c42c0ad39ba4270704950",
+  "artifact_file": "recorded-native-result.json",
+  "artifact_sha256": "6e9dfc3ded81af841188298ba37438371a1dc21f49106ed99d5f6fc93b6d3cef",
+  "artifact_bytes": 108,
+  "checks": [
+    {
+      "field": "project",
+      "expected": "Cedar",
+      "recorded_status": "PASS",
+      "recorded_observed": "Cedar",
+      "description": "project is Cedar"
+    },
+    {
+      "field": "owner",
+      "expected": "Leo",
+      "recorded_status": "PASS",
+      "recorded_observed": "Leo",
+      "description": "owner is Leo"
+    },
+    {
+      "field": "review_date",
+      "expected": "2026-12-23",
+      "recorded_status": "PASS",
+      "recorded_observed": "2026-12-23",
+      "description": "review_date is 2026-12-23"
+    },
+    {
+      "field": "notifications_enabled",
+      "expected": false,
+      "recorded_status": "PASS",
+      "recorded_observed": false,
+      "description": "notifications_enabled is false"
+    }
+  ],
+  "scope": "Recomputing these four artifact checks does not authenticate the native host, establish current freshness or prove complete requirement coverage. The record is historical; no new backend verification occurs."
+}

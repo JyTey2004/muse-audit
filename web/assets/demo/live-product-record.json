@@ -1,0 +1,74 @@
+{
+  "schema": "stardive-public-product-record-1",
+  "recorded_date": "2026-11-04",
+  "request": "Create a welcome note in handoff-demo-20261104.txt containing exactly 'Welcome to Cedar. Leo will share the next steps.' Keep it at most 20 words. Give me the file.",
+  "task_id": "task-72769f0bd5d848b7",
+  "workflow_run_id": "workflow-run-ffdc0a9306ca4a208bc4bc5c51ee0e1b",
+  "workflow_run_id_source": "Separate scoped read-only native lookup",
+  "version_id": "v-e091dd6cb9314b16bb331be3752b18ce",
+  "receipt_ref": "receipt-e0075a9f325245a4b82cc07585591337",
+  "receipt_generated_at": "2026-11-04T05:45:46.716694+00:00",
+  "completed_at": "2026-11-04T05:45:49.750707+00:00",
+  "backend_decision": "SELECTED_CHECKS_PASS",
+  "completion_state": "COMPLETED",
+  "checks": [
+    {
+      "description": "File contains exactly 'Welcome to Cedar. Leo will share the next steps.'",
+      "expected": true,
+      "locations": [],
+      "mode": "must_change",
+      "observed": true,
+      "reason": "Required exact text is present.",
+      "requirement_id": "exact_text",
+      "status": "PASS"
+    },
+    {
+      "description": "At most 20 words",
+      "expected": 20,
+      "locations": [],
+      "mode": "must_change",
+      "observed": 9,
+      "reason": "Word count is within the limit.",
+      "requirement_id": "word_cap",
+      "status": "PASS"
+    }
+  ],
+  "counts": {
+    "BLOCKED": 0,
+    "FAIL": 0,
+    "PASS": 2,
+    "STALE": 0,
+    "UNKNOWN": 0
+  },
+  "artifact": {
+    "filename": "handoff-demo-20261104.txt",
+    "bytes": 48,
+    "sha256": "5dbeb186af5e8b37328a71ee9d5415907a6fbce5d72de3ea7a9631ba53f5390a",
+    "word_count": 9,
+    "download": "handoff-demo-20261104.txt"
+  },
+  "verification": {
+    "native_ui": "Original request, file preview, card and expanded recorded milestones observed in native Muse",
+    "independent_https_gets": {
+      "task": 200,
+      "receipt": 200,
+      "completion": 200,
+      "result": 200
+    },
+    "bindings_match": true,
+    "actual_backend_result_bytes_match_receipt": true,
+    "native_download_bytes_independently_collected": false,
+    "fresh_mcp_child_transcript_exported": false,
+    "model_identities_exported": false,
+    "no_new_receipt_or_recheck_during_validation": true
+  },
+  "scope": "Selected deterministic text and word-count checks only; no general semantic or checklist completeness assurance.",
+  "video": {
+    "file": "live-product-demo.mp4",
+    "seconds": 43,
+    "method": "Actual native screenshots sampled with timestamps; waiting condensed and sidebar cropped",
+    "continuous_screen_recording": false
+  },
+  "event_graph_scope": "Selected retained request, version, receipt, completion and result bindings; not a complete hidden action trace.",
+  "active_benchmark_data_used": false
+}

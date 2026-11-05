@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:07.000
+We ask Muse for a welcome note with exact wording and a twenty word limit.
+
+00:00:07.000 --> 00:00:15.000
+Muse runs the saved workflow and prepares the file. A draft alone is not enough to release it.
+
+00:00:15.000 --> 00:00:24.000
+A separate worker calls Stardive to check the actual file against the saved requirements: requested text and word count.
+
+00:00:24.000 --> 00:00:33.000
+Both checks pass. The file arrives with a verification receipt bound to the version that was checked.
+
+00:00:33.000 --> 00:00:43.000
+Open the receipt for the recorded steps and the checks against your request. The assurance covers only the listed checks.

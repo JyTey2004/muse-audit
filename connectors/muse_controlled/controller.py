@@ -142,7 +142,10 @@ class Controller:
         if receipt:
             for c in receipt.get('checks',[]):
                 checks.append({'check':c.get('description') or c.get('requirement_id'),'observed':c.get('observed'),'required':c.get('expected'),'status':c.get('status'),'reason':c.get('reason')})
-        return {'state':state or ctx['state'],'task_id':ctx['task_id'],'version_id':ctx['version_id'],
+        request=ctx.get('request')
+        # Display only the exact request bound to this run, never a model paraphrase.
+        if not isinstance(request,str) or sha(request.encode())!=ctx['request_sha256']:request=None
+        return {'state':state or ctx['state'],'task_id':ctx['task_id'],'version_id':ctx['version_id'],'request':request,
             'request_sha256':ctx['request_sha256'],'artifact_name':ctx['artifact_name'],'artifact_sha256':ctx.get('artifact_sha256'),
             'receipt_ref':ctx.get('receipt_ref'),'receipt_date':receipt.get('generated_at') if receipt else None,
             'checks':checks,'reason':reason,'mcp_check':ctx.get('mcp_check'),'actions':ctx.get('actions',[]),
@@ -211,7 +214,7 @@ class Controller:
         if (self.private/'context.json').exists():raise Blocked('This private run is already prepared; use a new run, never replace its contract')
         task=self.backend('POST','/api/tasks',body,{'Idempotency-Key':'controlled-'+uuid.uuid4().hex})
         if task.get('frozen',{}).get('request')!=request or not ID.fullmatch(task.get('task_id','')):raise Blocked('Backend did not bind the original request')
-        ctx={'schema':1,'state':'FROZEN','task_id':task['task_id'],'frozen_sha256':task['frozen_sha256'],
+        ctx={'schema':1,'state':'FROZEN','task_id':task['task_id'],'frozen_sha256':task['frozen_sha256'],'request':request,
             'request_sha256':sha(request.encode()),'artifact_name':name,'artifact_kind':kind,'version_id':'v-'+uuid.uuid4().hex,'receipt_ref':None}
         self.record(ctx,'request_saved');self.save(ctx);return self.describe(ctx)
     def upload(self,draft_name):

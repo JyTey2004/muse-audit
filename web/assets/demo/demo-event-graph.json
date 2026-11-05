@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "scope": "Selected links reconstructed from retained request, workflow, artifact, MCP, receipt and completion records. Not a complete or independently captured action graph.",
+  "nodes": [
+    {
+      "id": "request",
+      "type": "request",
+      "label": "Your request",
+      "at_utc": "2026-11-01T16:03:25.943873+00:00"
+    },
+    {
+      "id": "work",
+      "type": "workflow_phase",
+      "label": "Muse work phase",
+      "call_key": "create"
+    },
+    {
+      "id": "artifact",
+      "type": "artifact_version",
+      "label": "Private draft",
+      "version": "v-3381eb39b980403b9e3216ca57501906",
+      "sha256": "71cbe3ddf478f0dbeb77393c5f4e9dababd8b8679d03c4c4a371290ff30d49cf"
+    },
+    {
+      "id": "check",
+      "type": "workflow_phase",
+      "label": "Muse check phase",
+      "call_key": "check-deliver"
+    },
+    {
+      "id": "review",
+      "type": "mcp_review",
+      "label": "Executed checks",
+      "at_utc": "2026-11-01T16:04:06.469498+00:00",
+      "digest": "a95bda1b29c2ccb2ebccd3c5b47a6d644c91d5c6679b7a76f31520cb0d9645fa",
+      "state": "PASS"
+    },
+    {
+      "id": "receipt",
+      "type": "receipt",
+      "label": "Stored receipt",
+      "at_utc": "2026-11-01T16:04:07.652647+00:00",
+      "ref": "receipt-c82e8c25323349ee84573267e29b6c51"
+    },
+    {
+      "id": "release",
+      "type": "completion",
+      "label": "Checked file delivered",
+      "at_utc": "2026-11-01T16:04:10.080837+00:00",
+      "sha256": "71cbe3ddf478f0dbeb77393c5f4e9dababd8b8679d03c4c4a371290ff30d49cf"
+    }
+  ],
+  "edges": [
+    {
+      "from": "request",
+      "to": "work",
+      "relationship": "used_by"
+    },
+    {
+      "from": "work",
+      "to": "artifact",
+      "relationship": "produces"
+    },
+    {
+      "from": "artifact",
+      "to": "check",
+      "relationship": "selected_version_for"
+    },
+    {
+      "from": "check",
+      "to": "review",
+      "relationship": "invokes"
+    },
+    {
+      "from": "review",
+      "to": "receipt",
+      "relationship": "evidence_must_agree"
+    },
+    {
+      "from": "receipt",
+      "to": "release",
+      "relationship": "required_for_release"
+    },
+    {
+      "from": "artifact",
+      "to": "release",
+      "relationship": "same_recorded_bytes"
+    }
+  ]
+}

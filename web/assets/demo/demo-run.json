@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "title": "Muse, Make no mistakes!",
+  "recorded_local_date": "2026-11-02",
+  "recorded_at_utc": "2026-11-01T16:03:25.943873+00:00",
+  "presentation": "Motion replay built from recorded native Muse data; compressed editorial timing. Not a live feed or continuous screen recording.",
+  "request": "Make a welcome note for Aspen in welcome-note.txt. It should contain exactly 'Welcome to Aspen. Iris will share the next steps.' and no more than 20 words. Give me the file.",
+  "task_id": "task-0646d310a4d44e84",
+  "run_id": "workflow-run-5c0de2c046774f019996a1ded3318eae",
+  "artifact_version": "v-3381eb39b980403b9e3216ca57501906",
+  "artifact": {
+    "name": "welcome-note.txt",
+    "bytes": 49,
+    "sha256": "71cbe3ddf478f0dbeb77393c5f4e9dababd8b8679d03c4c4a371290ff30d49cf",
+    "content": "Welcome to Aspen. Iris will share the next steps."
+  },
+  "workers": [
+    {
+      "role": "Muse work phase",
+      "call_key": "create"
+    },
+    {
+      "role": "Muse check phase",
+      "call_key": "check-deliver"
+    }
+  ],
+  "worker_evidence": "The recorded workflow snapshot has two awaited agent calls. Child IDs and provider/model independence are not established by this cohort.",
+  "check": {
+    "tool": "taskflow_review",
+    "state": "PASS",
+    "selected_check_count": 2,
+    "checks": [
+      {
+        "description": "File contains exactly 'Welcome to Aspen. Iris will share the next steps.'",
+        "expected": true,
+        "locations": [],
+        "mode": "must_change",
+        "observed": true,
+        "reason": "Required exact text is present.",
+        "requirement_id": "exact_text",
+        "status": "PASS"
+      },
+      {
+        "description": "At most 20 words",
+        "expected": 20,
+        "locations": [],
+        "mode": "must_change",
+        "observed": 9,
+        "reason": "Word count is within the limit.",
+        "requirement_id": "word_cap",
+        "status": "PASS"
+      }
+    ],
+    "at_utc": "2026-11-01T16:04:06.469498+00:00",
+    "digest": "a95bda1b29c2ccb2ebccd3c5b47a6d644c91d5c6679b7a76f31520cb0d9645fa"
+  },
+  "receipt": {
+    "id": "receipt-c82e8c25323349ee84573267e29b6c51",
+    "at_utc": "2026-11-01T16:04:07.652647+00:00",
+    "completion_state": "COMPLETED",
+    "completed_at_utc": "2026-11-01T16:04:10.080837+00:00"
+  },
+  "claim_scope": {
+    "another_llm": "A separate Muse LLM work/check phase is part of the recorded workflow. The checking worker invokes executable artifact checks; no distinct-provider semantic LLM judgment is established.",
+    "event_graph": "Selected links reconstructed from retained request, workflow, artifact, MCP, receipt and completion records. Not a complete or independently captured action graph.",
+    "fulfillment": "The two selected checks passed for the exact artifact version. Source authenticity and complete requirement interpretation remain outside this check."
+  },
+  "provenance": {
+    "source_cohort": "Accepted native v10 normal run; v11 is a separate presentation-only replay",
+    "source_files_sha256": {
+      "normal-task.json": "b29f22a8a631a6d75633df87e53bfdd446d2af2b2d66d5a6e9d872a6eec19f0f",
+      "normal-receipt.json": "3af15012854a769f375f54c2b70d4c6d35447fac113451779154bd72f157e62c",
+      "normal-completion.json": "5f66ad37ce167026c774b8ed5c9c1b028b6736903ab99c4b5556553369e91434",
+      "native-metadata.json": "7043d80e78d0860e8b989fbb1f45fd0c0e8f0e32e65a8f4735d1b6d0e54bb1fc",
+      "live-verification.json": "a638fbf6c4668947963260d596b1d5a2ea82262818324c88dfb351c2d1cc6b13",
+      "receipt-binding.json": "2ba65c2730f725900edc39723a995d19dd7acb54770ac33b006389b6e698da46"
+    },
+    "delivered_bytes_recomputed": true,
+    "draft_publisher_ui_backend_match": true,
+    "private_paths_and_credentials_omitted": true
+  },
+  "blocked_control": {
+    "recorded_date": "2026-11-02",
+    "source": "Retained fresh v10 negative control",
+    "task_id": "task-df07dab864334385",
+    "requested_text": "This is a five word line",
+    "observed_words": 6,
+    "maximum_words": 3,
+    "checks": {
+      "PASS": 1,
+      "FAIL": 1
+    },
+    "completion": "BLOCKED",
+    "result_http": 409,
+    "final_file": false
+  }
+}
