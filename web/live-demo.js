@@ -13,7 +13,7 @@
     if (!explanationStarted || video.ended) video.currentTime = 0;
     explanationStarted = true;
     video.muted = false; video.loop = false;
-    video.play().catch(() => { video.controls = true; syncPlayLabel(); });
+    video.play().then(syncPlayLabel).catch(() => { video.controls = true; syncPlayLabel(); });
   });
   ['play', 'pause', 'ended'].forEach(event => video.addEventListener(event, syncPlayLabel));
   video.addEventListener('error', () => {
